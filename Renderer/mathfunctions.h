@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <cmath>
 
 template<typename T, int N>
 struct Vec;
@@ -106,4 +107,4 @@ void translateCoordinates(Vec<float, 2>& c, int wWidth, int wHeight);
 
 Vec<float, 2> project(Vec<float, 3>& c);
 
-Vec<float, 2> placePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight);
+Vec<float, 2> updatePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight, float angleX, float angleY, float angleZ);

@@ -30,6 +30,51 @@ coordinateBlock getRBlock(Vec<float, 2> t[])
     };
 }
 
+//by y axis
+void rotate_xz(Vec<float, 3>& p, float angle)
+{
+    float cosA = std::cos(angle);
+    float sinA = std::sin(angle);
+
+    float x = p.x;
+    float z = p.z;
+
+    p.x = x * cosA - z * sinA;
+    p.z = x * sinA + z * cosA;
+
+}
+
+//x axis
+void rotate_yz(Vec<float, 3>& p, float angle)
+{
+    float cosA = std::cos(angle);
+    float sinA = std::sin(angle);
+
+    float y = p.y;
+    float z = p.z;
+
+    p.y = y * cosA - z * sinA;
+    p.z = y * sinA + z * cosA;
+}
+
+//z axis
+void rotate_xy(Vec<float, 3>& p, float angle)
+{
+    float cosA = std::cos(angle);
+    float sinA = std::sin(angle);
+
+    float x = p.x;
+    float y = p.y;
+
+    p.x = x * cosA - y * sinA;
+    p.y = x * sinA + y * cosA;
+}
+
+void rotate(Vec<float, 3>& p, float angleX, float angleY, float angleZ) {
+    rotate_yz(p, angleX);
+    rotate_xz(p, angleY);
+    rotate_xy(p, angleZ);
+}
 
 void translateZ(Vec<float, 3>& p, float offset) {
     p.z += offset;
@@ -45,8 +90,10 @@ Vec<float, 2> project(Vec<float, 3>& c) {
 }
 
 
-Vec<float, 2> placePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight) {
+Vec<float, 2> updatePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight, float angleX, float angleY, float angleZ) {
     Vec<float, 3> temp = p;
+
+    rotate(temp, angleX, angleY, angleZ);
 
     translateZ(temp, offset);
 

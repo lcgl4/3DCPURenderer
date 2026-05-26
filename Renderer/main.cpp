@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include <iostream>
 #include "Window.h"
 #include "rasterization.h"
@@ -18,8 +20,8 @@ int main() {
 	int width = window->getWidth();
 	int height = window->getHeight();
 
-
-	float zOffset = 3.f;
+	float angle = 0;
+	float zOffset = 8.f;
 	Vec<float, 3>* vs = cube.getVertices()->data();
 	Vec<int, 3>* faces = cube.getFaces()->data();
 	std::vector <uint32_t> colours = cube.getColours();
@@ -35,9 +37,10 @@ int main() {
 
 
 		zOffset += 0.1f;
+		angle += 0.05 * M_PI;
 
 		for (int i = 0; i <8; i++) {//number of vetrices  8
-			projected[i] = placePoint(vs[i], zOffset, width, height);
+			projected[i] = updatePoint(vs[i], zOffset, width, height, angle, angle, angle);
 		}
 
 
