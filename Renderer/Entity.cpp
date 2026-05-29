@@ -23,17 +23,27 @@ void Entity::setColours(const std::vector<uint32_t> colours)
 	this->colours = colours;
 }
 
-std::vector<Vec<float, 3>>* Entity::getVertices()
-{
-	return &this->vertices;
-}
-
-std::vector<Vec<int, 3>>* Entity::getFaces()
-{
-	return &this->faces;
-}
-
 std::vector<uint32_t> Entity::getColours()
 {
 	return this->colours;
+}
+
+int Entity::getVerticesCount()
+{
+	return this->vertices.size();
+}
+
+int Entity::getFacesCount()
+{
+	return this->faces.size();
+}
+
+Vec<float, 3> Entity::getVertexByIndex(int i)
+{
+	return vertices[i];
+}
+
+Vec<int, 3> Entity::getFaceByIndex(int i)
+{
+	return faces[i];
 }

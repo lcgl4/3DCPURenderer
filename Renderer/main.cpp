@@ -8,24 +8,44 @@
 
 #define W_WIDTH 800
 #define W_HEIGHT 600
+#define FPS 60
+#define DELTA 1.f/FPS
+
 
 int main() {
 
 	Entity cube;
 	loadEntityFromFile("blendercube.obj", cube);
 
-
-
 	Window* window = new Window(W_WIDTH, W_HEIGHT);
 	int width = window->getWidth();
 	int height = window->getHeight();
 
-	float angle = 0;
-	float zOffset = 8.f;
-	Vec<float, 3>* vs = cube.getVertices()->data();
-	Vec<int, 3>* faces = cube.getFaces()->data();
-	std::vector <uint32_t> colours = cube.getColours();
-	Vec<float, 2> projected[8];
+	std::vector<std::array<Vec<float, 2>, 3>> triangles;
+
+	Mat4 translation;
+
+	Mat4 view;
+	view.m[T_Z] = -3.f;
+
+	float tangent = std::tan(FOV / 2);
+	float right = FRONT * tangent;
+	float aspect = (float)width / (float)height;
+	float top = right / aspect;
+
+	Mat4 projection = {
+	FRONT / right, 0, 0, 0,
+	0, FRONT / top, 0, 0,
+	0, 0, -(BACK + FRONT) / (BACK - FRONT), -1,
+	0, 0, -(2 * BACK * FRONT) / (BACK - FRONT), 0
+	};
+
+	float xOffset = 0.f;
+	float zOffset = -5.f;
+	float angle = 0.01 * M_PI;
+
+	Quaternion orientation = { 1, 0, 0, 0 };
+
 
 	bool running = true;
 	while (running) {
@@ -33,25 +53,18 @@ int main() {
 			running = false;
 		}
 
+		zOffset += 1.5 * DELTA;
+
+		updateQuaternion(orientation, { 0, angle, angle / 2 });
+
 		window->clearScreen();
 
-
-		zOffset += 0.1f;
-		angle += 0.05 * M_PI;
-
-		for (int i = 0; i <8; i++) {//number of vetrices  8
-			projected[i] = updatePoint(vs[i], zOffset, width, height, angle, angle, angle);
-		}
-
-
-		//turn inot a function
-		for (int i = 0; i < 12; i++) {//12 faces
-			Vec<float, 2> tri[] = { {projected[faces[i].x].x, projected[faces[i].x].y}, {projected[faces[i].y].x, projected[faces[i].y].y},  {projected[faces[i].z].x, projected[faces[i].z].y} };
-			rasterize(tri, window->getBuffer(), width, height, colours[i]);
-		}
+		updateRenderable(cube, triangles, translation, orientation, { xOffset, 0,zOffset }, projection, width, height);
+		
+		rasterize(cube, triangles, window->getBuffer(), width, height);
 
 		window->render();
-		Sleep(10);
+		Sleep(1000 / FPS);
 	}
 
 	delete window;

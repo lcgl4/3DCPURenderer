@@ -36,9 +36,16 @@ uint32_t getNextColor()
     }
 }
 
-void rasterize(Vec<float, 2> triangle[], uint32_t buffer[], int width, int height, uint32_t colour)
-{
+void printTriangle (Vec<float, 2> triangle[], uint32_t buffer[], int width, int height, uint32_t colour) {
+
     coordinateBlock c = getRBlock(triangle);
+
+    //temp out of bounds guard
+    c.minX = std::max(0.f, c.minX);
+    c.minY = std::max(0.f, c.minY);
+
+    c.maxX = std::min((float)width, c.maxX);
+    c.maxY = std::min((float)height, c.maxY);
 
     for (int i = c.minY; i < c.maxY; i++) {
         for (int j = c.minX; j < c.maxX; j++) {
@@ -50,4 +57,15 @@ void rasterize(Vec<float, 2> triangle[], uint32_t buffer[], int width, int heigh
         }
 
     }
+}
+
+void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, uint32_t buffer[], int width, int height)
+{
+    std::vector <uint32_t> colours = object.getColours();
+
+    for (int i = 0; i < object.getFacesCount(); i++) {
+        printTriangle(triangles[i].data(), buffer, width, height, colours[i]);
+    }
+
+    triangles.clear();
 }
