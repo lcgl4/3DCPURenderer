@@ -1,6 +1,20 @@
 #pragma once
+#define _USE_MATH_DEFINES
+
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <vector>
+#include <iostream>
+
+#define FOV 45.f * (M_PI / 180.0)
+#define FRONT 1.f
+#define BACK 100.f
+
+#define MAT_SIZE 16
+#define T_X 3
+#define T_Y 7
+#define T_Z 11
 
 template<typename T, int N>
 struct Vec;
@@ -97,14 +111,25 @@ struct coordinateBlock {
 	float minX, minY, maxX, maxY;
 };
 
+struct Quaternion {
+    float s, x, y, z;
+};
+
+struct Mat4 {
+    float m[MAT_SIZE] = {
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+    };
+};
+
+class Entity;
+
 bool pointInTriangle(const Vec<float,2>  a, const Vec<float, 2> b, const Vec<float, 2> c, const Vec<float, 2> p);
 
 coordinateBlock getRBlock(Vec<float, 2> t[]);//rasterization block
 
-void translateZ(Vec<float, 3>& p, float offset);
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height);
 
-void translateCoordinates(Vec<float, 2>& c, int wWidth, int wHeight);
-
-Vec<float, 2> project(Vec<float, 3>& c);
-
-Vec<float, 2> updatePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight, float angleX, float angleY, float angleZ);
+void updateQuaternion(Quaternion & orientation, Vec<float, 3> d);

@@ -1,4 +1,6 @@
 #include "mathfunctions.h"
+#include "Entity.h"
+
 
 bool pointInTriangle(const Vec<float, 2> a, const Vec<float, 2> b, const Vec<float, 2> c, const Vec<float, 2> p)
 {
@@ -30,74 +32,140 @@ coordinateBlock getRBlock(Vec<float, 2> t[])
     };
 }
 
-//by y axis
-void rotate_xz(Vec<float, 3>& p, float angle)
+Vec<float, 4> multiply(const Mat4& M, const Vec<float, 4>& v)
 {
-    float cosA = std::cos(angle);
-    float sinA = std::sin(angle);
-
-    float x = p.x;
-    float z = p.z;
-
-    p.x = x * cosA - z * sinA;
-    p.z = x * sinA + z * cosA;
-
+    return {
+        M.m[0] * v.x + M.m[1] * v.y + M.m[2] * v.z + M.m[3] * v.w,
+        M.m[4] * v.x + M.m[5] * v.y + M.m[6] * v.z + M.m[7] * v.w,
+        M.m[8] * v.x + M.m[9] * v.y + M.m[10] * v.z + M.m[11] * v.w,
+        M.m[12] * v.x + M.m[13] * v.y + M.m[14] * v.z + M.m[15] * v.w
+    };
 }
 
-//x axis
-void rotate_yz(Vec<float, 3>& p, float angle)
+Quaternion multiply(const Quaternion& a, const Quaternion& b)
 {
-    float cosA = std::cos(angle);
-    float sinA = std::sin(angle);
-
-    float y = p.y;
-    float z = p.z;
-
-    p.y = y * cosA - z * sinA;
-    p.z = y * sinA + z * cosA;
+    return {
+        a.s * b.s - a.x * b.x - a.y * b.y - a.z * b.z,
+        a.s * b.x + a.x * b.s + a.y * b.z - a.z * b.y,
+        a.s * b.y - a.x * b.z + a.y * b.s + a.z * b.x,
+        a.s * b.z + a.x * b.y - a.y * b.x + a.z * b.s
+    };
 }
 
-//z axis
-void rotate_xy(Vec<float, 3>& p, float angle)
+void rotate(Vec<float, 3>& p, Mat4& r) {
+
+    Vec<float, 4> rotated = multiply(r, { p.x, p.y, p.z, 1 });
+    p = { rotated.x,rotated.y,rotated.z };
+}
+
+void translateCoordinates(Vec<float, 3>& p, Mat4& translation) {
+    Vec<float, 4> translated = multiply(translation, { p.x, p.y, p.z, 1 });
+    p = { translated.x, translated.y, translated.z };
+}
+
+Vec<float, 2> normalizeCoordinates(Vec<float, 3>& c, int width, int height) {
+    return Vec<float, 2>((c.x + 1) / 2 * width, (1 - (c.y + 1) / 2) * height);
+}
+
+void project(Vec<float, 3>& c, Mat4& projection) {
+
+    Vec<float, 4> result = multiply(projection, { c.x, c.y, c.z, 1.f });
+
+    c.x = result.x / result.w;
+    c.y = result.y / result.w;
+}
+
+Vec<float, 2> updatePoint(Vec<float, 3> p, Mat4& r, Mat4& translation, Mat4& projection, int width, int height) {
+
+    rotate(p, r);
+    translateCoordinates(p, translation);
+    project(p, projection);
+    return normalizeCoordinates(p, width, height);
+}
+
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height)
 {
-    float cosA = std::cos(angle);
-    float sinA = std::sin(angle);
 
-    float x = p.x;
-    float y = p.y;
+    std::vector <Vec<float, 2>> projected;
+    projected.reserve(object.getVerticesCount());
+    triangles.reserve(object.getFacesCount());
 
-    p.x = x * cosA - y * sinA;
-    p.y = x * sinA + y * cosA;
+    translation.m[T_X] = offset.x;
+    translation.m[T_Y] = offset.y;
+    translation.m[T_Z] = offset.z;
+
+    Mat4 rotation = {
+        1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
+        2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
+        2 * q.x * q.z - 2 * q.s * q.y,              2 * q.y * q.z + 2 * q.s * q.x,                   1 - 2 * q.x * q.x - 2 * q.y * q.y,              0,
+        0,                                                    0,                                                         0,                                                          1
+    };
+
+
+    for (int i = 0; i < object.getVerticesCount(); i++) {
+        projected.push_back(updatePoint(object.getVertexByIndex(i), rotation, translation, projection, width, height));
+    }
+
+
+    for (int i = 0; i < object.getFacesCount(); i++) {
+        Vec <int, 3> cFace = object.getFaceByIndex(i);
+        std::array<Vec<float, 2>, 3> tri = { projected[cFace.x], projected[cFace.y], projected[cFace.z] };
+
+        triangles.push_back(tri);
+    }
 }
 
-void rotate(Vec<float, 3>& p, float angleX, float angleY, float angleZ) {
-    rotate_yz(p, angleX);
-    rotate_xz(p, angleY);
-    rotate_xy(p, angleZ);
+void normalizeQuaternion(Quaternion& q)
+{
+    float len = std::sqrt(
+        q.s * q.s +
+        q.x * q.x +
+        q.y * q.y +
+        q.z * q.z
+    );
+
+    if (len == 0) {
+        q = { 1,0,0,0 };
+        return;
+    }
+
+    q.s /= len;
+    q.x /= len;
+    q.y /= len;
+    q.z /= len;
 }
 
-void translateZ(Vec<float, 3>& p, float offset) {
-    p.z += offset;
+Quaternion axisAngle(Vec<float, 3> p, float angle)
+{
+
+    float len = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+    if (len == 0.0f)
+        return { 1, 0, 0, 0 };
+
+    float inv = 1.0f / len;
+    p.x *= inv;
+    p.y *= inv;
+    p.z *= inv;
+
+    float half = angle * 0.5f;
+    float s = std::sin(half);
+
+    return {
+        std::cos(half),
+        p.x * s,
+        p.y * s,
+        p.z * s
+    };
 }
 
-void translateCoordinates(Vec<float, 2>& c, int wWidth, int wHeight) {
-    c = { (c.x + 1) / 2 * wWidth, (1 - (c.y + 1) / 2) * wHeight };
-}
+void updateQuaternion(Quaternion& orientation, Vec<float, 3> d)
+{
+    Quaternion qx = axisAngle({ 1, 0, 0 }, d.x);
+    Quaternion qy = axisAngle({ 0, 1, 0 }, d.y);
+    Quaternion qz = axisAngle({ 0, 0, 1 }, d.z);
 
-Vec<float, 2> project(Vec<float, 3>& c) {
+    Quaternion delta = multiply(qz, multiply(qy, qx));
 
-    return { c.x * 2.f / c.z, c.y * 2.f / c.z };
-}
-
-
-Vec<float, 2> updatePoint(Vec<float, 3>& p, float offset, int wWidth, int wHeight, float angleX, float angleY, float angleZ) {
-    Vec<float, 3> temp = p;
-
-    rotate(temp, angleX, angleY, angleZ);
-
-    translateZ(temp, offset);
-
-    Vec<float, 2 > point = project(temp);
-    translateCoordinates(point, wWidth, wHeight);
-    return point;
+    orientation = multiply(delta, orientation);
+    normalizeQuaternion(orientation);
 }

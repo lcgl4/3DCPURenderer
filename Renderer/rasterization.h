@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <array>
 #include "mathfunctions.h"
+#include "Entity.h"
 
 #define BLACK 0x000000
 #define GREEN 0x00ff26
@@ -17,6 +19,6 @@
 
 uint32_t getNextColor();
 
-void rasterize(Vec<float, 2> triangle[], uint32_t buffer[], int width, int height, uint32_t colour);
+void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, uint32_t buffer[], int width, int height);
 
 
