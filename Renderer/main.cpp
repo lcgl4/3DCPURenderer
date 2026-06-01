@@ -5,11 +5,10 @@
 #include "rasterization.h"
 #include "Entity.h"
 #include "objReader.h"
+#include <chrono>
 
-#define W_WIDTH 800
-#define W_HEIGHT 600
-#define FPS 60
-#define DELTA 1.f/FPS
+#define W_WIDTH 1366
+#define W_HEIGHT 768
 
 
 int main() {
@@ -41,21 +40,31 @@ int main() {
 	};
 
 	float xOffset = 0.f;
-	float zOffset = -5.f;
-	float angle = 0.01 * M_PI;
+	float zOffset = -10.f;
+	float angle = 0.1 * M_PI;
 
 	Quaternion orientation = { 1, 0, 0, 0 };
 
+	using clock = std::chrono::high_resolution_clock;
+
+	auto last = clock::now();
 
 	bool running = true;
 	while (running) {
+
+		auto now = clock::now();
+
+		float delta = std::chrono::duration<float>(now - last	).count();
+
+		last = now;
+
 		if (!window->processMessages()) {
 			running = false;
 		}
 
-		zOffset += 1.5 * DELTA;
+		zOffset += 0.5 * delta;
 
-		updateQuaternion(orientation, { 0, angle, angle / 2 });
+		updateQuaternion(orientation, { 0, angle*delta, angle / 2 * delta });
 
 		window->clearScreen();
 
@@ -64,7 +73,6 @@ int main() {
 		rasterize(cube, triangles, window->getBuffer(), width, height);
 
 		window->render();
-		Sleep(1000 / FPS);
 	}
 
 	delete window;
