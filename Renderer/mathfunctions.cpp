@@ -2,17 +2,17 @@
 #include "Entity.h"
 
 
-bool pointInTriangle(const Vec<float, 2> a, const Vec<float, 2> b, const Vec<float, 2> c, const Vec<float, 2> p)
+bool pointInTriangle(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c, const Vec<float, 2>& p)
 {
     Vec<float, 2> ab =  {b.x - a.x, b.y - a.y };
-    Vec<float, 2> ca = { c.x - a.x, c.y - a.y };
+    Vec<float, 2> ac = { c.x - a.x, c.y - a.y };
     Vec<float, 2> ap = { p.x - a.x, p.y - a.y };
 
     float d00 = dot(ab, ab);
-    float d01 = dot(ab, ca);
-    float d11 = dot(ca, ca);
+    float d01 = dot(ab, ac);
+    float d11 = dot(ac, ac);
     float d20 = dot(ap, ab);
-    float d21 = dot(ap, ca);
+    float d21 = dot(ap, ac);
 
     float denom = d00 * d11 - d01 * d01;
 
@@ -20,6 +20,18 @@ bool pointInTriangle(const Vec<float, 2> a, const Vec<float, 2> b, const Vec<flo
     float v = (d00 * d21 - d01 * d20) / denom;
 
     return (u >= 0.0) && (v >= 0.0) && (u + v <= 1.0);
+}
+
+bool isClockwise(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c) {
+
+    Vec<float, 2> ab = { b.x - a.x, b.y - a.y };
+    Vec<float, 2> ac = { c.x - a.x, c.y - a.y };
+
+
+    if (cross(ab, ac) < 0.f) {
+        return true;
+    }
+    return false;
 }
 
 coordinateBlock getRBlock(Vec<float, 2> t[])

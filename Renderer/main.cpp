@@ -64,7 +64,7 @@ int main() {
 
 		zOffset += 0.5 * delta;
 
-		updateQuaternion(orientation, { 0, angle*delta, angle / 2 * delta });
+		updateQuaternion(orientation, { angle*delta*3, angle*delta, angle / 2 * delta });
 
 		window->clearScreen();
 

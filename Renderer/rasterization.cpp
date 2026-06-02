@@ -64,7 +64,13 @@ void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triang
     std::vector <uint32_t> colours = object.getColours();
 
     for (int i = 0; i < object.getFacesCount(); i++) {
-        printTriangle(triangles[i].data(), buffer, width, height, colours[i]);
+
+        //backface culling for counterclockwise
+        if (isClockwise(triangles[i].data()[0], triangles[i].data()[1], triangles[i].data()[2]))
+        {
+            printTriangle(triangles[i].data(), buffer, width, height, colours[i]);
+        }
+
     }
 
     triangles.clear();
