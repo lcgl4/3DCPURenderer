@@ -107,6 +107,13 @@ T dot(const Vec<T, N>& a, const Vec<T, N>& b)
     return result;
 }
 
+template<typename T>
+T cross(const Vec<T, 2>& a, const Vec<T, 2>& b)
+{
+    return a.x * b.y - a.y * b.x;
+}
+
+
 struct coordinateBlock {
 	float minX, minY, maxX, maxY;
 };
@@ -126,7 +133,9 @@ struct Mat4 {
 
 class Entity;
 
-bool pointInTriangle(const Vec<float,2>  a, const Vec<float, 2> b, const Vec<float, 2> c, const Vec<float, 2> p);
+bool pointInTriangle(const Vec<float,2>&  a, const Vec<float, 2>& b, const Vec<float, 2>& c, const Vec<float, 2>& p);
+
+bool isClockwise(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c);
 
 coordinateBlock getRBlock(Vec<float, 2> t[]);//rasterization block
 
