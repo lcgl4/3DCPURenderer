@@ -13,8 +13,8 @@
 
 int main() {
 
-	Entity cube;
-	loadEntityFromFile("blendercube.obj", cube);
+	Entity model;
+	loadEntityFromFile("blendermonkey.obj", model);
 
 	Window* window = new Window(W_WIDTH, W_HEIGHT);
 	int width = window->getWidth();
@@ -68,9 +68,9 @@ int main() {
 
 		window->clearScreen();
 
-		updateRenderable(cube, triangles, translation, orientation, { xOffset, 0,zOffset }, projection, width, height);
+		updateRenderable(model, triangles, translation, orientation, { xOffset, 0,zOffset }, projection, width, height);
 		
-		rasterize(cube, triangles, window->getBuffer(), width, height);
+		rasterize(model, triangles, window->getBuffer(), width, height);
 
 		window->render();
 	}
