@@ -32,11 +32,14 @@ void loadEntityFromFile(const std::string name, Entity& obj)
                     while (iss >> index) {
                         int i = 0;
                         int faceVert = 0;
-                        while (index[i] != '/') {
-                            faceVert *= 10;
-                            faceVert += index[i]-'0'-1;//-1 because my vertices start from 0
+
+                        while (i < index.size() && index[i] != '/')
+                        {
+                            faceVert = faceVert * 10 + (index[i] - '0');
                             i++;
                         }
+
+                        faceVert--;
                         singleFace.push_back(faceVert);
                     }
 
