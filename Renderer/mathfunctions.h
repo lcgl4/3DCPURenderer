@@ -133,12 +133,12 @@ struct Mat4 {
 
 class Entity;
 
-bool pointInTriangle(const Vec<float,2>&  a, const Vec<float, 2>& b, const Vec<float, 2>& c, const Vec<float, 2>& p);
+bool pointInTriangle(const Vec<float,3>&  a, const Vec<float, 3>& b, const Vec<float, 3>& c, const Vec<float, 2>& p, Vec<float, 3>& w);
 
-bool isClockwise(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c);
+bool isClockwise(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float, 3>& c);
 
-coordinateBlock getRBlock(Vec<float, 2> t[]);//rasterization block
+coordinateBlock getRBlock(Vec<float, 3> t[]);//rasterization block
 
-void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height);
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height);
 
 void updateQuaternion(Quaternion & orientation, Vec<float, 3> d);

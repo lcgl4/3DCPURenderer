@@ -36,7 +36,12 @@ uint32_t getNextColor()
     }
 }
 
-void printTriangle (Vec<float, 2> triangle[], uint32_t buffer[], int width, int height, uint32_t colour) {
+void clearDepthBuffer(float depthbuffer[], int width, int height) {
+    for (int i = 0; i < width * height; i++)
+        depthbuffer[i] = 300.f;//for now checking against huge number
+}
+
+void printTriangle (Vec<float, 3> triangle[], uint32_t buffer[], float depthbuffer[], int width, int height, uint32_t colour) {
 
     coordinateBlock c = getRBlock(triangle);
 
@@ -47,20 +52,28 @@ void printTriangle (Vec<float, 2> triangle[], uint32_t buffer[], int width, int 
     c.maxX = std::min((float)width, c.maxX);
     c.maxY = std::min((float)height, c.maxY);
 
+    Vec<float, 3> weights;
+
     for (int i = c.minY; i < c.maxY; i++) {
         for (int j = c.minX; j < c.maxX; j++) {
 
-            if (pointInTriangle(triangle[0], triangle[1], triangle[2], { j + 0.5f,i + 0.5f })) {
+            if (pointInTriangle(triangle[0], triangle[1], triangle[2], { j + 0.5f,i + 0.5f }, weights)) {
 
-                buffer[width * i + j] = colour;
+                float depth = dot({ triangle[0].z, triangle[1].z, triangle[2].z },weights );
+                if (depth < depthbuffer[width * i + j]) {
+                    buffer[width * i + j] = colour;
+                    depthbuffer[width * i + j] = depth;
+                }
+                
             }
         }
 
     }
 }
 
-void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, uint32_t buffer[], int width, int height)
+void rasterize(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, uint32_t buffer[], float depthbuffer[], int width, int height)
 {
+    clearDepthBuffer(depthbuffer, width, height);
     std::vector <uint32_t> colours = object.getColours();
 
     for (int i = 0; i < object.getFacesCount(); i++) {
@@ -68,10 +81,11 @@ void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triang
         //backface culling for counterclockwise
         if (isClockwise(triangles[i].data()[0], triangles[i].data()[1], triangles[i].data()[2]))
         {
-            printTriangle(triangles[i].data(), buffer, width, height, colours[i]);
+            printTriangle(triangles[i].data(), buffer, depthbuffer, width, height, colours[i]);
         }
 
     }
 
     triangles.clear();
 }
+

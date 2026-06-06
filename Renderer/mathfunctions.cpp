@@ -2,7 +2,7 @@
 #include "Entity.h"
 
 
-bool pointInTriangle(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c, const Vec<float, 2>& p)
+bool pointInTriangle(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float, 3>& c, const Vec<float, 2>& p, Vec<float, 3>& w)
 {
     Vec<float, 2> ab =  {b.x - a.x, b.y - a.y };
     Vec<float, 2> ac = { c.x - a.x, c.y - a.y };
@@ -19,10 +19,14 @@ bool pointInTriangle(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<f
     float u = (d11 * d20 - d01 * d21) / denom;
     float v = (d00 * d21 - d01 * d20) / denom;
 
+    w.x = 1.f - u - v;//a 
+    w.y = u;//b
+    w.z = v;//c
+
     return (u >= 0.0) && (v >= 0.0) && (u + v <= 1.0);
 }
 
-bool isClockwise(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float, 2>& c) {
+bool isClockwise(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float, 3>& c) {
 
     Vec<float, 2> ab = { b.x - a.x, b.y - a.y };
     Vec<float, 2> ac = { c.x - a.x, c.y - a.y };
@@ -34,7 +38,7 @@ bool isClockwise(const Vec<float, 2>& a, const Vec<float, 2>& b, const Vec<float
     return false;
 }
 
-coordinateBlock getRBlock(Vec<float, 2> t[])
+coordinateBlock getRBlock(Vec<float, 3> t[])
 {
     return {
         std::min({t[0].x, t[1].x, t[2].x}),
@@ -75,8 +79,8 @@ void translateCoordinates(Vec<float, 3>& p, Mat4& translation) {
     p = { translated.x, translated.y, translated.z };
 }
 
-Vec<float, 2> normalizeCoordinates(Vec<float, 3>& c, int width, int height) {
-    return Vec<float, 2>((c.x + 1) / 2 * width, (1 - (c.y + 1) / 2) * height);
+Vec<float, 3> normalizeCoordinates(Vec<float, 3>& c, int width, int height) {
+    return Vec<float, 3>((c.x + 1) / 2 * width, (1 - (c.y + 1) / 2) * height, c.z);
 }
 
 void project(Vec<float, 3>& c, Mat4& projection) {
@@ -85,9 +89,10 @@ void project(Vec<float, 3>& c, Mat4& projection) {
 
     c.x = result.x / result.w;
     c.y = result.y / result.w;
+    c.z = result.z / result.w;
 }
 
-Vec<float, 2> updatePoint(Vec<float, 3> p, Mat4& r, Mat4& translation, Mat4& projection, int width, int height) {
+Vec<float, 3> updatePoint(Vec<float, 3> p, Mat4& r, Mat4& translation, Mat4& projection, int width, int height) {
 
     rotate(p, r);
     translateCoordinates(p, translation);
@@ -95,10 +100,10 @@ Vec<float, 2> updatePoint(Vec<float, 3> p, Mat4& r, Mat4& translation, Mat4& pro
     return normalizeCoordinates(p, width, height);
 }
 
-void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height)
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height)
 {
 
-    std::vector <Vec<float, 2>> projected;
+    std::vector <Vec<float, 3>> projected;
     projected.reserve(object.getVerticesCount());
     triangles.reserve(object.getFacesCount());
 
@@ -121,7 +126,7 @@ void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>&
 
     for (int i = 0; i < object.getFacesCount(); i++) {
         Vec <int, 3> cFace = object.getFaceByIndex(i);
-        std::array<Vec<float, 2>, 3> tri = { projected[cFace.x], projected[cFace.y], projected[cFace.z] };
+        std::array<Vec<float, 3>, 3> tri = { projected[cFace.x], projected[cFace.y], projected[cFace.z] };
 
         triangles.push_back(tri);
     }
