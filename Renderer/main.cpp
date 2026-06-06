@@ -20,7 +20,7 @@ int main() {
 	int width = window->getWidth();
 	int height = window->getHeight();
 
-	std::vector<std::array<Vec<float, 2>, 3>> triangles;
+	std::vector<std::array<Vec<float, 3>, 3>> triangles;
 
 	Mat4 translation;
 
@@ -42,6 +42,9 @@ int main() {
 	float xOffset = 0.f;
 	float zOffset = -10.f;
 	float angle = 0.1 * M_PI;
+
+	float* depthbuffer;
+	depthbuffer = new float[width * height];
 
 	Quaternion orientation = { 1, 0, 0, 0 };
 
@@ -70,7 +73,7 @@ int main() {
 
 		updateRenderable(model, triangles, translation, orientation, { xOffset, 0,zOffset }, projection, width, height);
 		
-		rasterize(model, triangles, window->getBuffer(), width, height);
+		rasterize(model, triangles, window->getBuffer(), depthbuffer, width, height);
 
 		window->render();
 	}

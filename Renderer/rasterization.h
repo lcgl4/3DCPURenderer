@@ -19,6 +19,6 @@
 
 uint32_t getNextColor();
 
-void rasterize(Entity& object, std::vector<std::array<Vec<float, 2>, 3>>& triangles, uint32_t buffer[], int width, int height);
+void rasterize(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, uint32_t buffer[], float depthbuffer[], int width, int height);
 
 
