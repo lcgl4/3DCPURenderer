@@ -7,9 +7,6 @@
 #include <vector>
 #include <iostream>
 
-#define FOV 45.f * (M_PI / 180.0)
-#define FRONT 1.f
-#define BACK 100.f
 
 #define MAT_SIZE 16
 #define T_X 3
@@ -60,6 +57,7 @@ struct Vec<T, 4>
 
     Vec() : x(0), y(0), z(0), w(0) {}
     Vec(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+    Vec(const Vec<T, 3>& v, T w) : x(v.x), y(v.y), z(v.z), w(w) {}
 
     T& operator[](int i) {
         return (&x)[i];
@@ -139,6 +137,12 @@ bool isClockwise(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float
 
 coordinateBlock getRBlock(Vec<float, 3> t[]);//rasterization block
 
-void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height);
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Mat4& projection, int width, int height);
 
-void updateQuaternion(Quaternion & orientation, Vec<float, 3> d);
+void normalizeQuaternion(Quaternion& q);
+
+Quaternion axisAngle(Vec<float, 3> p, float angle);
+
+Vec<float, 4> multiply(const Mat4& M, const Vec<float, 4>& v);
+
+Quaternion multiply(const Quaternion& a, const Quaternion& b);
