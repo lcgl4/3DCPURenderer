@@ -68,59 +68,64 @@ Quaternion multiply(const Quaternion& a, const Quaternion& b)
     };
 }
 
-void rotate(Vec<float, 3>& p, Mat4& r) {
+void rotate(Vec<float, 4>& vertex, const Mat4& r) {
 
-    Vec<float, 4> rotated = multiply(r, { p.x, p.y, p.z, 1 });
-    p = { rotated.x,rotated.y,rotated.z };
+    vertex = multiply(r, vertex);
 }
 
-void translateCoordinates(Vec<float, 3>& p, Mat4& translation) {
-    Vec<float, 4> translated = multiply(translation, { p.x, p.y, p.z, 1 });
-    p = { translated.x, translated.y, translated.z };
+void translateCoordinates(Vec<float, 4>& vertex, const Mat4& translation) {
+    vertex = multiply(translation, vertex);
 }
 
-Vec<float, 3> normalizeCoordinates(Vec<float, 3>& c, int width, int height) {
-    return Vec<float, 3>((c.x + 1) / 2 * width, (1 - (c.y + 1) / 2) * height, c.z);
+Vec<float, 3> normalizeCoordinates(Vec<float, 4>& vertex, int width, int height) {
+    return Vec<float, 3>((vertex.x + 1) / 2 * width, (1 - (vertex.y + 1) / 2) * height, vertex.z);
 }
 
-void project(Vec<float, 3>& c, Mat4& projection) {
+void project(Vec<float, 4>& vertex, const Mat4& projection) {
 
-    Vec<float, 4> result = multiply(projection, { c.x, c.y, c.z, 1.f });
+    vertex = multiply(projection, vertex);
 
-    c.x = result.x / result.w;
-    c.y = result.y / result.w;
-    c.z = result.z / result.w;
+    vertex.x = vertex.x / vertex.w;
+    vertex.y = vertex.y / vertex.w;
+    vertex.z = vertex.z / vertex.w;
 }
 
-Vec<float, 3> updatePoint(Vec<float, 3> p, Mat4& r, Mat4& translation, Mat4& projection, int width, int height) {
+Vec<float, 3> updatePoint(Vec<float, 4> vertex, const Mat4& r, const Mat4& translation, const Mat4& projection, int width, int height) {
 
-    rotate(p, r);
-    translateCoordinates(p, translation);
-    project(p, projection);
-    return normalizeCoordinates(p, width, height);
+    rotate(vertex, r);
+    translateCoordinates(vertex, translation);
+    project(vertex, projection);
+    return normalizeCoordinates(vertex, width, height);
 }
 
-void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Quaternion q, Vec<float, 3> offset, Mat4& projection, int width, int height)
+void prepareRotationMatrix(Quaternion& q, Mat4& m) {
+    m= {
+        1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
+        2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
+        2 * q.x * q.z - 2 * q.s * q.y,              2 * q.y * q.z + 2 * q.s * q.x,                   1 - 2 * q.x * q.x - 2 * q.y * q.y,              0,
+        0,                                                    0,                                                         0,                                                          1
+    };
+}
+
+void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Mat4& projection, int width, int height)
 {
 
     std::vector <Vec<float, 3>> projected;
     projected.reserve(object.getVerticesCount());
     triangles.reserve(object.getFacesCount());
 
-    translation.m[T_X] = offset.x;
-    translation.m[T_Y] = offset.y;
-    translation.m[T_Z] = offset.z;
+    Transform transform = object.getTransform();
 
-    Mat4 rotation = {
-        1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
-        2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
-        2 * q.x * q.z - 2 * q.s * q.y,              2 * q.y * q.z + 2 * q.s * q.x,                   1 - 2 * q.x * q.x - 2 * q.y * q.y,              0,
-        0,                                                    0,                                                         0,                                                          1
-    };
+    translation.m[T_X] = transform.position.x;
+    translation.m[T_Y] = transform.position.y;
+    translation.m[T_Z] = transform.position.z;
+
+    Mat4 rotation; 
+    prepareRotationMatrix(transform.rotation, rotation);
 
 
     for (int i = 0; i < object.getVerticesCount(); i++) {
-        projected.push_back(updatePoint(object.getVertexByIndex(i), rotation, translation, projection, width, height));
+        projected.push_back(updatePoint({ object.getVertexByIndex(i) , 1}, rotation, translation, projection, width, height));
     }
 
 
@@ -173,16 +178,4 @@ Quaternion axisAngle(Vec<float, 3> p, float angle)
         p.y * s,
         p.z * s
     };
-}
-
-void updateQuaternion(Quaternion& orientation, Vec<float, 3> d)
-{
-    Quaternion qx = axisAngle({ 1, 0, 0 }, d.x);
-    Quaternion qy = axisAngle({ 0, 1, 0 }, d.y);
-    Quaternion qz = axisAngle({ 0, 0, 1 }, d.z);
-
-    Quaternion delta = multiply(qz, multiply(qy, qx));
-
-    orientation = multiply(delta, orientation);
-    normalizeQuaternion(orientation);
 }

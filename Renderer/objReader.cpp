@@ -1,5 +1,42 @@
 #include "objReader.h"
 
+uint32_t getNextColor()//for getting default no texture colours
+{
+    static int c = -1;
+    c++;
+    if (c >= NUMBER_OF_COLORS - 1) {// -1 bc not taking black into account
+        c = 0;
+    }
+
+    switch (c) {
+    case 0:
+        return GREEN;
+        break;
+    case 1:
+        return BLUE;
+        break;
+    case 2:
+        return DBLUE;
+        break;
+    case 3:
+        return PURPLE;
+        break;
+    case 4:
+        return PINK;
+        break;
+    case 5:
+        return RED;
+        break;
+    case 6:
+        return YELLOW;
+        break;
+    case 7:
+        return ORANGE;
+        break;
+    }
+}
+
+
 void loadEntityFromFile(const std::string name, Entity& obj)
 {
     std::ifstream file(name);
