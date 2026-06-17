@@ -1,5 +1,6 @@
 #include "mathfunctions.h"
 #include "Entity.h"
+#include "Camera.h"
 
 
 bool pointInTriangle(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float, 3>& c, const Vec<float, 2>& p, Vec<float, 3>& w)
@@ -77,63 +78,68 @@ void translateCoordinates(Vec<float, 4>& vertex, const Mat4& translation) {
     vertex = multiply(translation, vertex);
 }
 
-Vec<float, 3> normalizeCoordinates(Vec<float, 4>& vertex, int width, int height) {
+Vec<float, 3> NDCtoPixels(Vec<float, 4>& vertex, int width, int height) {
     return Vec<float, 3>((vertex.x + 1) / 2 * width, (1 - (vertex.y + 1) / 2) * height, vertex.z);
 }
 
-void project(Vec<float, 4>& vertex, const Mat4& projection) {
-
-    vertex = multiply(projection, vertex);
+void normalizeCoordinates(Vec<float, 4>& vertex) {
 
     vertex.x = vertex.x / vertex.w;
     vertex.y = vertex.y / vertex.w;
     vertex.z = vertex.z / vertex.w;
 }
 
-Vec<float, 3> updatePoint(Vec<float, 4> vertex, const Mat4& r, const Mat4& translation, const Mat4& projection, int width, int height) {
-
-    rotate(vertex, r);
-    translateCoordinates(vertex, translation);
-    project(vertex, projection);
-    return normalizeCoordinates(vertex, width, height);
+bool clipVertex(Vec<float, 4>& t) {
+    for (int i = 0; i < 3; i++) {
+        if (!(t[i] >= -t.w && t[i] <= t.w)) {
+            return false;
+        }
+    }
+    return true;
 }
 
-void prepareRotationMatrix(Quaternion& q, Mat4& m) {
-    m= {
-        1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
-        2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
-        2 * q.x * q.z - 2 * q.s * q.y,              2 * q.y * q.z + 2 * q.s * q.x,                   1 - 2 * q.x * q.x - 2 * q.y * q.y,              0,
-        0,                                                    0,                                                         0,                                                          1
-    };
-}
-
-void updateRenderable(Entity& object, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& translation, Mat4& projection, int width, int height)
+void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& projection, int width, int height)
 {
 
-    std::vector <Vec<float, 3>> projected;
+    std::vector <Vec<float, 4>> projected;
     projected.reserve(object.getVerticesCount());
     triangles.reserve(object.getFacesCount());
 
-    Transform transform = object.getTransform();
-
-    translation.m[T_X] = transform.position.x;
-    translation.m[T_Y] = transform.position.y;
-    translation.m[T_Z] = transform.position.z;
-
-    Mat4 rotation; 
-    prepareRotationMatrix(transform.rotation, rotation);
+    Mat4 model = object.getModelMatrix();
+    Mat4 view = camera.getViewMatrix();
+    Mat4 MVP = projection * view * model;
 
 
     for (int i = 0; i < object.getVerticesCount(); i++) {
-        projected.push_back(updatePoint({ object.getVertexByIndex(i) , 1}, rotation, translation, projection, width, height));
+
+        Vec<float, 4> vertex = { object.getVertexByIndex(i) , 1 };
+        Vec<float, 4> Vworld = multiply(model, vertex);
+        Vec<float, 4> Vview = multiply(view, Vworld);
+        Vec<float, 4> Vclip = multiply(MVP, vertex);
+
+        projected.push_back(Vclip);
     }
 
 
     for (int i = 0; i < object.getFacesCount(); i++) {
         Vec <int, 3> cFace = object.getFaceByIndex(i);
-        std::array<Vec<float, 3>, 3> tri = { projected[cFace.x], projected[cFace.y], projected[cFace.z] };
 
-        triangles.push_back(tri);
+        if (clipVertex(projected[cFace.x]) && clipVertex(projected[cFace.y]) && clipVertex(projected[cFace.z])) {
+
+            Vec<float, 4> a = projected[cFace.x];
+            normalizeCoordinates(a);
+
+            Vec<float, 4> b = projected[cFace.y];
+            normalizeCoordinates(b);
+
+            Vec<float, 4> c = projected[cFace.z];
+            normalizeCoordinates(c);
+
+            std::array<Vec<float, 3>, 3> tri = { NDCtoPixels(a, width, height), NDCtoPixels(b, width, height), NDCtoPixels(c, width, height) };
+
+            triangles.push_back(tri);
+        }
+
     }
 }
 

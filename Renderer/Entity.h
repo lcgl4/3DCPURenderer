@@ -2,6 +2,11 @@
 #include <vector>
 #include "mathfunctions.h"
 
+//for translation matrix
+#define T_X 3
+#define T_Y 7
+#define T_Z 11
+
 struct Mesh
 {
 	std::vector<Vec<float, 3>> vertices;
@@ -12,7 +17,7 @@ struct Transform
 {
 	Vec<float, 3> position;
 	Quaternion rotation;
-	Vec<float, 3> scale;//not scaling now todo
+	Vec<float, 3> scale;
 };
 
 class Entity
@@ -31,7 +36,12 @@ public:
 	Vec <int, 3> getFaceByIndex(int i);
 	void move(Vec<float, 3> offset);
 	void rotate(Vec<float, 3> d);
+	Mat4 getModelMatrix();
 private:
+	Mat4 getRotationMatrix();
+	Mat4 getTranslationMatrix();
+	Mat4 getScaleMatrix();
+
 	Mesh mesh;
 	Transform transform;
 	std::vector <uint32_t> colours;//for no texture triangle coloring

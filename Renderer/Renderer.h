@@ -23,9 +23,7 @@ private:
 
 	std::vector<std::array<Vec<float, 3>, 3>> triangles;
 
-	Mat4 translation;
 
-	Mat4 view;
 	Mat4 projection;
 
 	float* depthbuffer;

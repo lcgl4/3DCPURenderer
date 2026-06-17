@@ -72,3 +72,39 @@ void Entity::rotate(Vec<float, 3> d)
 	transform.rotation = multiply(delta, transform.rotation);
 	normalizeQuaternion(transform.rotation);
 }
+
+Mat4 Entity::getModelMatrix()
+{
+	return getTranslationMatrix() * getRotationMatrix() * getScaleMatrix();
+}
+
+Mat4 Entity::getRotationMatrix() {
+	Quaternion q = transform.rotation;
+	return {
+		1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
+		2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
+		2 * q.x * q.z - 2 * q.s * q.y,              2 * q.y * q.z + 2 * q.s * q.x,                   1 - 2 * q.x * q.x - 2 * q.y * q.y,              0,
+		0,                                                    0,                                                         0,                                                          1
+	};
+}
+
+Mat4 Entity::getTranslationMatrix()
+{
+	Mat4 t;
+	t.m[T_X] = transform.position.x;
+	t.m[T_Y] = transform.position.y;
+	t.m[T_Z] = transform.position.z;
+	return t;
+}
+
+Mat4 Entity::getScaleMatrix()
+{
+	Mat4 s = {
+		transform.scale.x, 0, 0, 0,
+		0, transform.scale.y, 0, 0,
+		0, 0, transform.scale.z, 0,
+		0, 0, 0, 1
+	};
+	return s;
+}
+
