@@ -47,6 +47,11 @@ Entity& Scene::getSceneObjectByIndex(const int i)
     return *objects[i];
 }
 
+Camera& Scene::getSceneCamera()
+{
+    return camera;
+}
+
 int Scene::getNumberOfObjectsContained()
 {
     return objects.size();

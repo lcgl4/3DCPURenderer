@@ -47,9 +47,11 @@ int main() {
 
 		window->clearScreen();
 
-		scene.getSceneObjectByIndex(0).move({ 0,0, zMove });
+		//scene.getSceneObjectByIndex(0).move({ 0,0, zMove });
 
 		scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
+
+		//scene.getSceneCamera().rotate({ 0, angle, 0 });
 
 
 		renderer.renderScene(scene);

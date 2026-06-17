@@ -7,7 +7,6 @@ Renderer::Renderer(int width, int height, uint32_t* buffer)
 	this->height = height;
 	this->buffer = buffer;
 
-	view.m[T_Z] = -3.f;
 
 	float tangent = std::tan(FOV / 2);
 	float right = FRONT * tangent;
@@ -32,9 +31,10 @@ Renderer::~Renderer()
 
 void Renderer::renderScene(Scene& s)
 {
+    clearDepthBuffer();
 	for (int i = 0; i < s.getNumberOfObjectsContained(); i++) {
 
-		updateRenderable(s.getSceneObjectByIndex(i), triangles, translation, projection, width, height);
+		updateRenderable(s.getSceneObjectByIndex(i), s.getSceneCamera(), triangles, projection, width, height);
 
 		rasterize(s.getSceneObjectByIndex(i));
 	}
@@ -77,7 +77,7 @@ void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
 
 void Renderer::rasterize(Entity& object)
 {
-    clearDepthBuffer();
+    
     std::vector <uint32_t> colours = object.getColours();
 
     for (int i = 0; i < object.getFacesCount(); i++) {
