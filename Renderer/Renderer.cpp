@@ -49,17 +49,15 @@ void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
 
     coordinateBlock c = getRBlock(triangle);
 
-    //temp out of bounds guard
-    c.minX = std::max(0.f, c.minX);
-    c.minY = std::max(0.f, c.minY);
-
-    c.maxX = std::min((float)width, c.maxX);
-    c.maxY = std::min((float)height, c.maxY);
+    int startY = std::max(0.f, c.minY);
+    int endY = std::min((float)height, c.maxY);
+    int startX = std::max(0.f, c.minX);
+    int endX = std::min((float)width, c.maxX);
 
     Vec<float, 3> weights;
 
-    for (int i = c.minY; i < c.maxY; i++) {
-        for (int j = c.minX; j < c.maxX; j++) {
+    for (int i = startY; i < endY; i++) {
+        for (int j = startX; j < endX; j++) {
 
             if (pointInTriangle(triangle[0], triangle[1], triangle[2], { j + 0.5f,i + 0.5f }, weights)) {
 
@@ -80,7 +78,7 @@ void Renderer::rasterize(Entity& object)
     
     std::vector <uint32_t> colours = object.getColours();
 
-    for (int i = 0; i < object.getFacesCount(); i++) {
+    for (int i = 0; i < triangles.size(); i++) {
 
         //backface culling for counterclockwise
         if (isClockwise(triangles[i].data()[0], triangles[i].data()[1], triangles[i].data()[2]))

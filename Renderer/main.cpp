@@ -11,6 +11,8 @@
 #define W_WIDTH 1366
 #define W_HEIGHT 768
 
+Window* g_WindowInstance = nullptr;
+
 
 int main() {
 
@@ -19,6 +21,7 @@ int main() {
 
 
 	Window* window = new Window(W_WIDTH, W_HEIGHT);
+	Window* g_WindowInstance = window;
 	int width = window->getWidth();
 	int height = window->getHeight();
 
@@ -37,7 +40,7 @@ int main() {
 
 		last = now;
 
-		float zMove = 0.5 * delta;
+		float zMove = 2.5 * delta;
 
 		float angle = 0.1 * M_PI * delta;
 
@@ -45,13 +48,40 @@ int main() {
 			running = false;
 		}
 
+
+		if (window->isKeyPressed(VK_ESCAPE)) {
+			running = false;
+		}
+		if (window->isKeyPressed('W')) {
+			scene.getSceneCamera().move({ 0, 0, -zMove });
+		}
+		if (window->isKeyPressed('S')) {
+			scene.getSceneCamera().move({ 0, 0, zMove });
+		}
+		if (window->isKeyPressed('A')) {
+			scene.getSceneCamera().move({ -zMove, 0, 0 });
+		}
+		if (window->isKeyPressed('D')) {
+			scene.getSceneCamera().move({ zMove, 0, 0 });
+		}
+		if (window->isKeyPressed('Q')) {
+			scene.getSceneCamera().rotate({ 0, 0, angle });
+		}
+		if (window->isKeyPressed('E')) {
+			scene.getSceneCamera().rotate({ 0, 0, -angle });
+		}
+		if (window->isKeyPressed(VK_SPACE)) {
+			scene.getSceneCamera().move({ 0, zMove, 0 });
+		}
+		if (window->isKeyPressed(VK_SHIFT)) {
+			scene.getSceneCamera().move({ 0, -zMove, 0 });
+		}
+
 		window->clearScreen();
 
-		//scene.getSceneObjectByIndex(0).move({ 0,0, zMove });
 
 		scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
 
-		//scene.getSceneCamera().rotate({ 0, angle, 0 });
 
 
 		renderer.renderScene(scene);

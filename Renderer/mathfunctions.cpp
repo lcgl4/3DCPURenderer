@@ -74,10 +74,6 @@ void rotate(Vec<float, 4>& vertex, const Mat4& r) {
     vertex = multiply(r, vertex);
 }
 
-void translateCoordinates(Vec<float, 4>& vertex, const Mat4& translation) {
-    vertex = multiply(translation, vertex);
-}
-
 Vec<float, 3> NDCtoPixels(Vec<float, 4>& vertex, int width, int height) {
     return Vec<float, 3>((vertex.x + 1) / 2 * width, (1 - (vertex.y + 1) / 2) * height, vertex.z);
 }
@@ -89,13 +85,87 @@ void normalizeCoordinates(Vec<float, 4>& vertex) {
     vertex.z = vertex.z / vertex.w;
 }
 
-bool clipVertex(Vec<float, 4>& t) {
-    for (int i = 0; i < 3; i++) {
-        if (!(t[i] >= -t.w && t[i] <= t.w)) {
-            return false;
+int keepVertex(const Vec<float, 4>& t) {
+    if (t.x < -1.0f || t.x > 1.0f) {
+        return 0;
+    }
+
+    if (t.y < -1.0f || t.y > 1.0f) {
+        return 0;
+    }
+
+    return 1;
+}
+
+bool isInside(const Vec<float, 4>& p, ClipPlane plane) {
+    switch (plane) {
+    case Left:
+        return p.x >= -1.0f;
+    case Right:
+        return p.x <= 1.0f;
+    case Bottom:
+        return p.y >= -1.0f;
+    case Top:
+        return p.y <= 1.0f;
+    }
+    return false;
+}
+
+Vec<float, 4> getIntersection(const Vec<float, 4>& s, const Vec<float, 4>& p, ClipPlane plane) {
+
+    float t = 0.0f;
+    switch (plane) {
+    case Left:
+        t = (-1.0f - s.x) / (p.x - s.x);
+        break;
+    case Right:
+        t = (1.0f - s.x) / (p.x - s.x);
+        break;
+    case Bottom:
+        t = (-1.0f - s.y) / (p.y - s.y);
+        break;
+    case Top:
+        t = (1.0f - s.y) / (p.y - s.y);
+        break;
+    }
+
+    return Vec<float, 4>(
+        s.x + t * (p.x - s.x),
+        s.y + t * (p.y - s.y),
+        s.z + t * (p.z - s.z),
+        s.w + t * (p.w - s.w)
+    );
+}
+
+std::vector<Vec<float, 4>> clipTriangle(const std::vector<Vec<float, 4>>& triangle) {
+    std::vector<Vec<float, 4>> outputs = triangle;
+    ClipPlane planes[] = {Left, Right, Bottom, Top};
+
+    for (ClipPlane plane : planes) {
+        if (outputs.empty()) break;
+
+        std::vector<Vec<float, 4>> inputs = outputs;
+        outputs.clear();
+
+
+        Vec<float, 4> s = inputs.back();
+
+        for (const auto& p : inputs) {
+            if (isInside(p, plane)) {
+                if (!isInside(s, plane)) {
+
+                    outputs.push_back(getIntersection(s, p, plane));
+                }
+                outputs.push_back(p);
+            }
+            else if (isInside(s, plane)) {
+
+                outputs.push_back(getIntersection(s, p, plane));
+            }
+            s = p;
         }
     }
-    return true;
+    return outputs;
 }
 
 void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& projection, int width, int height)
@@ -124,20 +194,47 @@ void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<
     for (int i = 0; i < object.getFacesCount(); i++) {
         Vec <int, 3> cFace = object.getFaceByIndex(i);
 
-        if (clipVertex(projected[cFace.x]) && clipVertex(projected[cFace.y]) && clipVertex(projected[cFace.z])) {
+        Vec<float, 4> a = projected[cFace.x];
+        normalizeCoordinates(a);
+        int av = keepVertex(a);
 
-            Vec<float, 4> a = projected[cFace.x];
-            normalizeCoordinates(a);
+        Vec<float, 4> b = projected[cFace.y];
+        normalizeCoordinates(b);
+        int bv = keepVertex(b);
 
-            Vec<float, 4> b = projected[cFace.y];
-            normalizeCoordinates(b);
+        Vec<float, 4> c = projected[cFace.z];
+        normalizeCoordinates(c);
+        int cv = keepVertex(c);
 
-            Vec<float, 4> c = projected[cFace.z];
-            normalizeCoordinates(c);
+        //i use Sutherland-Hodgman algorithm
+        if (av + bv + cv == 3) {//none clipped
 
             std::array<Vec<float, 3>, 3> tri = { NDCtoPixels(a, width, height), NDCtoPixels(b, width, height), NDCtoPixels(c, width, height) };
 
             triangles.push_back(tri);
+        }
+        else if (av + bv + cv > 0) {
+
+            std::vector<Vec<float, 4>> inputTriangle = { a, b, c };
+            std::vector<Vec<float, 4>> clippedPoints = clipTriangle(inputTriangle);
+
+
+            std::vector<Vec<float, 3>> pixelPoints;
+            for (int j = 0; j < clippedPoints.size(); j++) {
+                pixelPoints.push_back(NDCtoPixels(clippedPoints[j], width, height));
+            }
+
+
+            if (pixelPoints.size() >= 3) {
+                for (int i = 1; i < pixelPoints.size() - 1; ++i) {
+                    std::array<Vec<float, 3>, 3> tri = {
+                        pixelPoints[0],
+                        pixelPoints[i],
+                        pixelPoints[i + 1]
+                    };
+                    triangles.push_back(tri);
+                }
+            }
         }
 
     }
