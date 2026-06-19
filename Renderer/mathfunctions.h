@@ -154,6 +154,13 @@ struct Mat4 {
     }
 };
 
+enum ClipPlane {
+    Left,
+    Right,
+    Bottom,
+    Top
+};
+
 class Entity;
 class Camera;
 

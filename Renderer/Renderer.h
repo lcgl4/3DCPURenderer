@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 
 #include "Scene.h"
+#include <algorithm>
 
 #define FOV 45.f * (M_PI / 180.0)
 #define FRONT 1.f

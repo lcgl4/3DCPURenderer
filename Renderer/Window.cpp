@@ -1,8 +1,16 @@
 #include "Window.h"
 
+extern Window* g_WindowInstance;
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
+	case WM_KEYDOWN:
+		if (g_WindowInstance) g_WindowInstance->setKeyState(wParam, true);
+		break;
+	case WM_KEYUP:
+		if (g_WindowInstance) g_WindowInstance->setKeyState(wParam, false);
+		break;
 	case WM_CLOSE:
 		DestroyWindow(hWnd);
 		break;
@@ -17,8 +25,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 Window::Window(int w, int h) : mHinstance(GetModuleHandle(nullptr))
 {
+	g_WindowInstance = this;
+
 	width = w;
 	height = h;
+	keys = new bool[256] {false};
 
 	buffer = new uint32_t[width * height];
 
@@ -66,6 +77,7 @@ Window::~Window()
 	UnregisterClass(CLASS_NAME, mHinstance);
 
 	delete[] buffer;
+	delete[] keys;
 }
 
 bool Window::processMessages()
@@ -104,6 +116,16 @@ int Window::getWidth()
 int Window::getHeight()
 {
 	return height;
+}
+
+bool Window::isKeyPressed(int virtualKeyCode)
+{
+	return keys[virtualKeyCode];
+}
+
+void Window::setKeyState(int virtualKeyCode, bool isDown)
+{
+	keys[virtualKeyCode] = isDown;
 }
 
 void Window::render()

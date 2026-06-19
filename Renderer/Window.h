@@ -28,6 +28,10 @@ public:
 	int getWidth();
 	int getHeight();
 
+	bool isKeyPressed(int virtualKeyCode);
+
+	void setKeyState(int virtualKeyCode, bool isDown);
+
 private:
 	HINSTANCE mHinstance;
 	HWND mHwnd;
@@ -37,5 +41,7 @@ private:
 
 	uint32_t* buffer;
 	BITMAPINFO bmi;
+
+	bool* keys;
 };
 
