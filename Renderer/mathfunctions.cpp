@@ -42,10 +42,10 @@ bool isClockwise(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float
 coordinateBlock getRBlock(Vec<float, 3> t[])
 {
     return {
-        std::min({t[0].x, t[1].x, t[2].x}),
-        std::min({t[0].y, t[1].y, t[2].y}),
-        std::max({t[0].x, t[1].x, t[2].x}),
-        std::max({t[0].y, t[1].y, t[2].y})
+        (int)std::floor(std::min({t[0].x, t[1].x, t[2].x})),
+        (int)std::floor(std::min({t[0].y, t[1].y, t[2].y})),
+        (int)std::ceil(std::max({t[0].x, t[1].x, t[2].x})),
+        (int)std::ceil(std::max({t[0].y, t[1].y, t[2].y}))
     };
 }
 
@@ -75,7 +75,7 @@ void rotate(Vec<float, 4>& vertex, const Mat4& r) {
 }
 
 Vec<float, 3> NDCtoPixels(Vec<float, 4>& vertex, int width, int height) {
-    return Vec<float, 3>((vertex.x + 1) / 2 * width, (1 - (vertex.y + 1) / 2) * height, vertex.z);
+    return Vec<float, 3>((vertex.x + 1.f) / 2.f * width, (1 - (vertex.y + 1.f) / 2.f) * height, vertex.z);
 }
 
 void normalizeCoordinates(Vec<float, 4>& vertex) {
@@ -107,6 +107,8 @@ bool isInside(const Vec<float, 4>& p, ClipPlane plane) {
         return p.y >= -1.0f;
     case Top:
         return p.y <= 1.0f;
+    case Near:   
+        return p.w >= 0.1f;
     }
     return false;
 }
@@ -127,44 +129,79 @@ Vec<float, 4> getIntersection(const Vec<float, 4>& s, const Vec<float, 4>& p, Cl
     case Top:
         t = (1.0f - s.y) / (p.y - s.y);
         break;
+    case Near:   
+        t = (0.1f - s.w) / (p.w - s.w); 
+        break;
     }
 
-    return Vec<float, 4>(
+    Vec<float, 4> intersect = {
         s.x + t * (p.x - s.x),
         s.y + t * (p.y - s.y),
         s.z + t * (p.z - s.z),
         s.w + t * (p.w - s.w)
-    );
+    };
+
+    if (plane == Left)   intersect.x = -1.0f;
+    if (plane == Right)  intersect.x = 1.0f;
+    if (plane == Bottom) intersect.y = -1.0f;
+    if (plane == Top)    intersect.y = 1.0f;
+    if (plane == Near)   intersect.w = 0.1f;
+
+    return intersect;
 }
 
 std::vector<Vec<float, 4>> clipTriangle(const std::vector<Vec<float, 4>>& triangle) {
     std::vector<Vec<float, 4>> outputs = triangle;
     ClipPlane planes[] = {Left, Right, Bottom, Top};
 
-    for (ClipPlane plane : planes) {
+    for (int i = 0; i < PLANES_NUMBER; i++) {
         if (outputs.empty()) break;
 
         std::vector<Vec<float, 4>> inputs = outputs;
         outputs.clear();
 
-
-        Vec<float, 4> s = inputs.back();
-
-        for (const auto& p : inputs) {
-            if (isInside(p, plane)) {
-                if (!isInside(s, plane)) {
-
-                    outputs.push_back(getIntersection(s, p, plane));
-                }
-                outputs.push_back(p);
+        for (int j = 0; j < inputs.size(); j++) {
+            bool a = isInside(inputs[j], planes[i]);
+            int ind = j + 1;
+            if (ind > inputs.size() - 1) {
+                ind = 0;
             }
-            else if (isInside(s, plane)) {
 
-                outputs.push_back(getIntersection(s, p, plane));
+            bool b = isInside(inputs[ind], planes[i]);
+
+            if (a && b) {
+                outputs.push_back(inputs[ind]);
             }
-            s = p;
+            else if (!a && b) {
+                outputs.push_back(getIntersection(inputs[j], inputs[ind], planes[i]));
+                outputs.push_back(inputs[ind]);
+            }
+            else if (a && !b) {
+                outputs.push_back(getIntersection(inputs[j], inputs[ind], planes[i]));
+            }
+        }
+        
+    }
+    return outputs;
+}
+
+std::vector<Vec<float, 4>> clipNear(const std::vector<Vec<float, 4>>& polygon) {
+    std::vector<Vec<float, 4>> outputs;
+    for (size_t j = 0; j < polygon.size(); j++) {
+        bool a = isInside(polygon[j], Near);
+        size_t ind = (j + 1) % polygon.size();
+        bool b = isInside(polygon[ind], Near);
+
+        if (a && b) { outputs.push_back(polygon[ind]); }
+        else if (!a && b) {
+            outputs.push_back(getIntersection(polygon[j], polygon[ind], Near));
+            outputs.push_back(polygon[ind]);
+        }
+        else if (a && !b) {
+            outputs.push_back(getIntersection(polygon[j], polygon[ind], Near));
         }
     }
+
     return outputs;
 }
 
@@ -194,48 +231,37 @@ void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<
     for (int i = 0; i < object.getFacesCount(); i++) {
         Vec <int, 3> cFace = object.getFaceByIndex(i);
 
-        Vec<float, 4> a = projected[cFace.x];
-        normalizeCoordinates(a);
-        int av = keepVertex(a);
+        std::vector<Vec<float, 4>> polygon = { projected[cFace.x], projected[cFace.y], projected[cFace.z] };
 
-        Vec<float, 4> b = projected[cFace.y];
-        normalizeCoordinates(b);
-        int bv = keepVertex(b);
+        polygon = clipNear(polygon);
 
-        Vec<float, 4> c = projected[cFace.z];
-        normalizeCoordinates(c);
-        int cv = keepVertex(c);
+        if (polygon.empty()) continue;
 
-        //i use Sutherland-Hodgman algorithm
-        if (av + bv + cv == 3) {//none clipped
-
-            std::array<Vec<float, 3>, 3> tri = { NDCtoPixels(a, width, height), NDCtoPixels(b, width, height), NDCtoPixels(c, width, height) };
-
-            triangles.push_back(tri);
+        bool clip = false;
+        for (int j = 0; j < polygon.size();j++) {
+            normalizeCoordinates(polygon[j]);
+            if (!keepVertex(polygon[j])) {
+                clip = true;
+            }
         }
-        else if (av + bv + cv > 0) {
 
-            std::vector<Vec<float, 4>> inputTriangle = { a, b, c };
-            std::vector<Vec<float, 4>> clippedPoints = clipTriangle(inputTriangle);
+        if (clip) {
+            polygon = clipTriangle(polygon);
+        }
 
 
-            std::vector<Vec<float, 3>> pixelPoints;
-            for (int j = 0; j < clippedPoints.size(); j++) {
-                pixelPoints.push_back(NDCtoPixels(clippedPoints[j], width, height));
+        std::vector<Vec<float, 3>> pixelPoints;
+            for (int k = 0; k < polygon.size(); k++) {
+                pixelPoints.push_back(NDCtoPixels(polygon[k], width, height));
             }
 
-
             if (pixelPoints.size() >= 3) {
-                for (int i = 1; i < pixelPoints.size() - 1; ++i) {
-                    std::array<Vec<float, 3>, 3> tri = {
-                        pixelPoints[0],
-                        pixelPoints[i],
-                        pixelPoints[i + 1]
-                    };
+
+                for (int k = 1; k < pixelPoints.size() - 1; ++k) {
+                    std::array<Vec<float, 3>, 3> tri = { pixelPoints[0], pixelPoints[k], pixelPoints[k + 1] };
                     triangles.push_back(tri);
                 }
             }
-        }
 
     }
 }
