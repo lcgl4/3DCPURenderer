@@ -65,10 +65,10 @@ int main() {
 			scene.getSceneCamera().move({ zMove, 0, 0 });
 		}
 		if (window->isKeyPressed('Q')) {
-			scene.getSceneCamera().rotate({ 0, 0, angle });
+			scene.getSceneCamera().rotate({ 0, angle, 0 });
 		}
 		if (window->isKeyPressed('E')) {
-			scene.getSceneCamera().rotate({ 0, 0, -angle });
+			scene.getSceneCamera().rotate({ 0, -angle, 0 });
 		}
 		if (window->isKeyPressed(VK_SPACE)) {
 			scene.getSceneCamera().move({ 0, zMove, 0 });

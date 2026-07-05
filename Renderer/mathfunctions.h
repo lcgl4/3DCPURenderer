@@ -9,6 +9,7 @@
 
 
 #define MAT_SIZE 16
+#define PLANES_NUMBER 4
 
 
 template<typename T, int N>
@@ -112,7 +113,7 @@ T cross(const Vec<T, 2>& a, const Vec<T, 2>& b)
 
 
 struct coordinateBlock {
-	float minX, minY, maxX, maxY;
+	int minX, minY, maxX, maxY;
 };
 
 struct Quaternion {
@@ -158,7 +159,8 @@ enum ClipPlane {
     Left,
     Right,
     Bottom,
-    Top
+    Top,
+    Near
 };
 
 class Entity;
