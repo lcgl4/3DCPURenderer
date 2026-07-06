@@ -308,3 +308,14 @@ Quaternion axisAngle(Vec<float, 3> p, float angle)
         p.z * s
     };
 }
+
+Vec<float, 3> rotateVector(Quaternion q, Vec<float, 3> v)
+{
+    Quaternion vq = { 0, v.x, v.y, v.z };
+
+    Quaternion qConj = { q.s, -q.x, -q.y, -q.z};
+
+    Quaternion result = multiply( multiply(q, vq), qConj );
+
+    return {result.x, result.y, result.z };
+}

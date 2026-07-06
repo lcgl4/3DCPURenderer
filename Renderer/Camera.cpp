@@ -67,7 +67,9 @@ Mat4 Camera::getViewMatrix() {
 }
 
 void Camera::move(Vec<float, 3> offset) {
-	transform.position = transform.position + offset;
+    Vec<float, 3> worldOffset = rotateVector( transform.rotation, offset );
+
+    transform.position = transform.position + worldOffset;
 }
 
 void Camera::rotate(Vec<float, 3> d) {

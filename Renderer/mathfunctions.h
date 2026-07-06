@@ -181,3 +181,5 @@ Quaternion axisAngle(Vec<float, 3> p, float angle);
 Vec<float, 4> multiply(const Mat4& M, const Vec<float, 4>& v);
 
 Quaternion multiply(const Quaternion& a, const Quaternion& b);
+
+Vec<float, 3> rotateVector(Quaternion q, Vec<float, 3> v);
