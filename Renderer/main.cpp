@@ -42,7 +42,7 @@ int main() {
 
 		float zMove = 2.5 * delta;
 
-		float angle = 0.1 * M_PI * delta;
+		float angle = 0.2 * M_PI * delta;
 
 		if (!window->processMessages()) {
 			running = false;
