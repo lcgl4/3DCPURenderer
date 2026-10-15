@@ -33,13 +33,17 @@ uint32_t getNextColor()//for getting default no texture colours
     case 7:
         return ORANGE;
         break;
+    default:
+        return GREEN;
+        break;
     }
 
 }
 
 
-void loadEntityFromFile(const std::string name, Entity& obj)
+void loadEntityFromFile(const std::string modelname, Entity& obj)
 {
+    std::string name = modelname + ".obj";
     std::ifstream file(name);
     std::string line, prefix;
     std::vector < Vec <float, 3> > vertices;

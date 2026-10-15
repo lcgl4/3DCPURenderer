@@ -11,17 +11,17 @@ Entity::~Entity()
 {
 }
 
-void Entity::setVertices(const std::vector<Vec<float, 3>> vertices)
+void Entity::setVertices(const std::vector<Vec<float, 3>>& vertices)
 {
 	this->mesh.vertices = vertices;
 }
 
-void Entity::setFaces(const std::vector<Vec<int, 3>> faces)
+void Entity::setFaces(const std::vector<Vec<int, 3>>& faces)
 {
 	this->mesh.faces = faces;
 }
 
-void Entity::setColours(const std::vector<uint32_t> colours)
+void Entity::setColours(const std::vector<uint32_t>& colours)
 {
 	this->colours = colours;
 }

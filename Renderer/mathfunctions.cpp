@@ -205,7 +205,7 @@ std::vector<Vec<float, 4>> clipNear(const std::vector<Vec<float, 4>>& polygon) {
     return outputs;
 }
 
-void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& projection, int width, int height)
+void updateRenderable(Entity& object, Camera& camera, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& projection, int width, int height)
 {
 
     std::vector <Vec<float, 4>> projected;
@@ -220,8 +220,8 @@ void updateRenderable(Entity& object, Camera camera, std::vector<std::array<Vec<
     for (int i = 0; i < object.getVerticesCount(); i++) {
 
         Vec<float, 4> vertex = { object.getVertexByIndex(i) , 1 };
-        Vec<float, 4> Vworld = multiply(model, vertex);
-        Vec<float, 4> Vview = multiply(view, Vworld);
+        //Vec<float, 4> Vworld = multiply(model, vertex);
+        //Vec<float, 4> Vview = multiply(view, Vworld);
         Vec<float, 4> Vclip = multiply(MVP, vertex);
 
         projected.push_back(Vclip);
