@@ -25,9 +25,9 @@ class Entity
 public:
 	Entity(Vec<float, 3> position);
 	~Entity();
-	void setVertices(const std::vector < Vec <float, 3> > vertices);
-	void setFaces(const std::vector < Vec <int, 3> > faces);
-	void setColours(const std::vector <uint32_t> colours);
+	void setVertices(const std::vector < Vec <float, 3> >& vertices);
+	void setFaces(const std::vector < Vec <int, 3> >& faces);
+	void setColours(const std::vector <uint32_t>& colours);
 	std::vector <uint32_t> getColours();
 	int getVerticesCount();
 	int getFacesCount();

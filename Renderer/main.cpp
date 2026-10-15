@@ -79,9 +79,7 @@ int main() {
 
 		window->clearScreen();
 
-
 		scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
-
 
 
 		renderer.renderScene(scene);

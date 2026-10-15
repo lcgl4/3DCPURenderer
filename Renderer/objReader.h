@@ -18,6 +18,6 @@
 
 #define NUMBER_OF_COLORS 9
 
-void loadEntityFromFile(const std::string name, Entity& obj);
+void loadEntityFromFile(const std::string modelname, Entity& obj);
 
 void normalizeModelCoordinates(std::vector < Vec <float, 3> >& vertices);

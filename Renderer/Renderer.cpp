@@ -42,7 +42,7 @@ void Renderer::renderScene(Scene& s)
 
 void Renderer::clearDepthBuffer() {
     for (int i = 0; i < width * height; i++)
-        depthbuffer[i] = 300.f;//for now checking against huge number
+        depthbuffer[i] = 300.f;//for now checking against hardcoded huge number
 }
 
 void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
