@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include "Entity.h"
+#include "Material.h"
 #include <algorithm>
 
 #define BLACK 0x000000
@@ -19,5 +20,7 @@
 #define NUMBER_OF_COLORS 9
 
 void loadEntityFromFile(const std::string modelname, Entity& obj);
+
+Material* loadMaterialFromFile(const std::string modelname);
 
 void normalizeModelCoordinates(std::vector < Vec <float, 3> >& vertices);

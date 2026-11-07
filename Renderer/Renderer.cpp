@@ -45,7 +45,12 @@ void Renderer::clearDepthBuffer() {
         depthbuffer[i] = 300.f;//for now checking against hardcoded huge number
 }
 
-void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
+//move to mathfunctions
+void calculateUV(int& u, int& v, Vec<float, 3> triangle[], const Vec<float, 3>& weights, Vec<float, 2> vt[]) {
+    float uInter = 0;
+}
+
+void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour, Material* mat, Vec<float, 2> vt[]) {
 
     coordinateBlock c = getRBlock(triangle);
 
@@ -65,7 +70,14 @@ void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
 
 
                 if (depth < depthbuffer[width * i + j]) {
-                    buffer[width * i + j] = colour;
+                    uint32_t pixelcolour = colour;
+                    int u, v;
+                    calculateUV(u, v, triangle, weights, vt);
+                    if (mat != nullptr) {//has a texture
+                        pixelcolour = mat->returnColourAtUV(u, v);
+                    }
+                    buffer[width * i + j] = pixelcolour;
+
                     depthbuffer[width * i + j] = depth;
                 }
 
@@ -77,15 +89,19 @@ void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour) {
 
 void Renderer::rasterize(Entity& object)
 {
-    
-    std::vector <uint32_t> colours = object.getColours();
+    uint32_t colours[] = { GREEN, BLUE };
+    Material* mat = object.getMaterial();
 
     for (int i = 0; i < triangles.size(); i++) {
 
         //backface culling for counterclockwise
         if (isClockwise(triangles[i].data()[0], triangles[i].data()[1], triangles[i].data()[2]))
         {
-            printTriangle(triangles[i].data(), colours[i % colours.size()]);
+
+            ///to jest zle bo te tez musisz clippowac w update renderable
+            Vec<float, 2> vt[] = { object.getVtByIndex(object.getVtFaceByIndex(i)[0]), object.getVtByIndex(object.getVtFaceByIndex(i)[1]) , object.getVtByIndex(object.getVtFaceByIndex(i)[2]) };
+
+            printTriangle(triangles[i].data(), colours[i % 2], mat, vt);
         }
 
     }

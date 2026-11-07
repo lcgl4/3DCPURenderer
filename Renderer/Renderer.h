@@ -19,7 +19,7 @@ public:
 private:
 	void rasterize(Entity& object);
 	void clearDepthBuffer();
-	void printTriangle(Vec<float, 3> triangle[], uint32_t colour);
+	void printTriangle(Vec<float, 3> triangle[], uint32_t colour, Material* mat, Vec<float, 2> vt[]);
 
 
 	std::vector<std::array<Vec<float, 3>, 3>> triangles;

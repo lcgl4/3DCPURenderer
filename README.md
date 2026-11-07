@@ -1,6 +1,8 @@
 # 3D CPU based renderer
 A project recreating the 3d rendering pipeline on the CPU and showing performance differences when using SIMD (to be implemented) and without.\
 \
+The project uses [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)\
+\
 Code documentation is at: `docs\documentation.md`.
 
 

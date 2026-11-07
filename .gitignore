@@ -98,6 +98,9 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Allow 3D model .obj files
+!Renderer/*.obj
+
 # Chutzpah Test files
 _Chutzpah*
 
