@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include "Entity.h"
+#include "Material.h"
 #include <algorithm>
 
 #define BLACK 0x000000
@@ -20,4 +21,6 @@
 
 void loadEntityFromFile(const std::string modelname, Entity& obj);
 
-void normalizeModelCoordinates(std::vector < Vec <float, 3> >& vertices);
+Material* loadMaterialFromFile(const std::string modelname);
+
+void normalizeModelCoordinates(std::vector < Vec <float, 3> >& v);

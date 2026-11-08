@@ -34,7 +34,7 @@ void Scene::loadSceneFromFile(const std::string name)
         ss >> position.y;
         ss >> position.z;
 
-        objects.push_back(new Entity(position));
+        objects.push_back(new Entity(position, loadMaterialFromFile(name)));
         loadEntityFromFile(name, *objects[i]);
         i++;
     }

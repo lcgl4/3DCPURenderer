@@ -102,7 +102,7 @@ How the 3D models are processed every frame.
 	Every point in the `polygon` is converted to pixel coordinates and if there are more than 3 vertices we use fan triangulation to divide the `polygon` into triangles that are pushed to the `std::vector<std::array<Vec<float, 3>, 3>> triangles` for rasterization.
 1. ### Rasterization
 	A [Renderer](#renderer) method iterates through all of the projected triangles inside `std::vector<std::array<Vec<float, 3>, 3>> triangles`. Every triangle is checked if it is clockwise using the cross product method. Counter-clockwise triangles are not printed (backface culling).
-	For every triangle that is being printed we get its bounding box known in code as `coordinateBlock` and check (using barycentric coordinates) for each pixel if it is inside the triangle (checking the middle of the pixel by adding 0.5f).  If the point lies within the triangle
+	For every triangle that is being printed we get its bounding box known in code as `coordinateBlock` and check (using barycentric coordinates) for each pixel if it is inside the triangle (checking the middle of the pixel by adding `0.5f`).  If the point lies within the triangle
 	we get the depth from dot product of the vector with the triangle vertices z values and the barycentric weights vector. If that depth is lower than the value present at that coordinate in the z buffer it replaces it and also changes the colour at that position in the frame buffer.
 
 ### quaternions
@@ -110,6 +110,8 @@ Quaternions are managed using these functions:
 * `normalizeQuaternion` scales the magnitude to `1` by dividing by lenght. if the lenght is `0` it sets it to a unit quaternion.
 * `axisAngle` normalizes the length of input vector, multiplies the imaginary part by `1 / normalized_lenght`, divides given angle by 2, sets the scalar to cos of the angle and multiplies the imaginary part by the sin of the angle.
 * `rotateVector` Rotates the vector using the `v' = qvq*` formula.
+\
+\
 When rotating an object the input is given like for euler angles `(angle_x, angle_y, angle_z)` and then `axisAngle` calculated for each one:
 ```cpp
 	Quaternion qx = axisAngle({ 1, 0, 0 }, d.x);
