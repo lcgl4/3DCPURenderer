@@ -8,6 +8,7 @@
 #include <iostream>
 
 
+
 #define MAT_SIZE 16
 #define PLANES_NUMBER 4
 
@@ -163,16 +164,17 @@ enum ClipPlane {
     Near
 };
 
+struct Vertex;
 class Entity;
 class Camera;
 
 bool pointInTriangle(const Vec<float,3>&  a, const Vec<float, 3>& b, const Vec<float, 3>& c, const Vec<float, 2>& p, Vec<float, 3>& w);
 
-bool isClockwise(const Vec<float, 3>& a, const Vec<float, 3>& b, const Vec<float, 3>& c);
+bool isClockwise(const Vec<float, 4>& a, const Vec<float, 4>& b, const Vec<float, 4>& c);
 
-coordinateBlock getRBlock(Vec<float, 3> t[]);//rasterization block
+coordinateBlock getRBlock(Vertex t[]);//rasterization block
 
-void updateRenderable(Entity& object, Camera& camera, std::vector<std::array<Vec<float, 3>, 3>>& triangles, Mat4& projection, int width, int height);
+void updateRenderable(Entity& object, Camera& camera, std::vector<std::array<Vertex, 3>>& triangles, Mat4& projection, int width, int height);
 
 void normalizeQuaternion(Quaternion& q);
 

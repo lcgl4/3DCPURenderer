@@ -23,4 +23,4 @@ void loadEntityFromFile(const std::string modelname, Entity& obj);
 
 Material* loadMaterialFromFile(const std::string modelname);
 
-void normalizeModelCoordinates(std::vector < Vec <float, 3> >& vertices);
+void normalizeModelCoordinates(std::vector < Vec <float, 3> >& v);

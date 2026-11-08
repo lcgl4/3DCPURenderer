@@ -49,6 +49,7 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
     std::string name = modelname + ".obj";
     std::ifstream file(name);
     std::string line, prefix;
+
     std::vector < Vec <float, 3> > vertices;
     std::vector < Vec <float, 2> > vts;
     std::vector < Vec <int, 3> > faces;
@@ -86,7 +87,6 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                         int i = 0;
                         int faceVert = 0;
 
-                        //turn this into a function \/ and the triangulate thing too
                         while (i < index.size() && index[i] != '/')
                         {
                             faceVert = faceVert * 10 + (index[i] - '0');
@@ -94,6 +94,11 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                         }
                         faceVert--;
                         singleFace.push_back(faceVert);
+
+                        if (i < index.size() && index[i] == '/') {
+                            i++;
+                        }
+
                         faceVert = 0;
                         while (i < index.size() && index[i] != '/')
                         {
@@ -119,12 +124,13 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                         vtfaces.push_back({d,e,f});
                     }
                     singleFace.clear();
+                    singleFaceVt.clear();
                 }
             }
 
             normalizeModelCoordinates(vertices);
 
-            obj.setMesh(faces, vtfaces, vertices, vts);
+            obj.setMesh(faces, vertices, vtfaces, vts);
 
             file.close();
         }
@@ -175,7 +181,7 @@ Material* loadMaterialFromFile(const std::string modelname)
     return nullptr;
 }
 
-void normalizeModelCoordinates(std::vector<Vec<float, 3>>& v)
+void normalizeModelCoordinates(std::vector<Vec <float, 3>>& v)
 {
     if (v.size() < 2)
         return;

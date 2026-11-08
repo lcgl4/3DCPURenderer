@@ -19,10 +19,10 @@ public:
 private:
 	void rasterize(Entity& object);
 	void clearDepthBuffer();
-	void printTriangle(Vec<float, 3> triangle[], uint32_t colour, Material* mat, Vec<float, 2> vt[]);
+	void printTriangle(Vertex triangle[], uint32_t colour, Material* mat);
 
 
-	std::vector<std::array<Vec<float, 3>, 3>> triangles;
+	std::vector<std::array<Vertex, 3>> triangles;
 
 
 	Mat4 projection;

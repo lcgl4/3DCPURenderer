@@ -45,12 +45,22 @@ void Renderer::clearDepthBuffer() {
         depthbuffer[i] = 300.f;//for now checking against hardcoded huge number
 }
 
-//move to mathfunctions
-void calculateUV(int& u, int& v, Vec<float, 3> triangle[], const Vec<float, 3>& weights, Vec<float, 2> vt[]) {
-    float uInter = 0;
+void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
+    float uInter = weights.x * (t[0].vt.x / t[0].v.w) + weights.y * (t[1].vt.x / t[1].v.w) + weights.z * (t[2].vt.x / t[2].v.w);
+    float vInter = weights.x * (t[0].vt.y / t[0].v.w) + weights.y * (t[1].vt.y / t[1].v.w) + weights.z * (t[2].vt.y / t[2].v.w);
+
+    float wInter = weights.x * (1 / t[0].v.w) + weights.y * (1 / t[1].v.w) + weights.z * (1 / t[2].v.w);
+    /*
+    float uInter = weights.x * (t[0].vt.x / t[0].v.z) + weights.y * (t[1].vt.x / t[1].v.z) + weights.z * (t[2].vt.x / t[2].v.z);
+    float vInter = weights.x * (t[0].vt.y / t[0].v.z) + weights.y * (t[1].vt.y / t[1].v.z) + weights.z * (t[2].vt.y / t[2].v.z);
+
+    float zInter = weights.x * (1 / t[0].v.z) + weights.y * (1 / t[1].v.z) + weights.z * (1 / t[2].v.z);
+    */
+    u = uInter / wInter;
+    v = vInter / wInter;
 }
 
-void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour, Material* mat, Vec<float, 2> vt[]) {
+void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) {
 
     coordinateBlock c = getRBlock(triangle);
 
@@ -64,15 +74,17 @@ void Renderer::printTriangle(Vec<float, 3> triangle[], uint32_t colour, Material
     for (int i = startY; i < endY; i++) {
         for (int j = startX; j < endX; j++) {
 
-            if (pointInTriangle(triangle[0], triangle[1], triangle[2], { j + 0.5f,i + 0.5f }, weights)) {
+            if (pointInTriangle(triangle[0].v, triangle[1].v, triangle[2].v, { j + 0.5f,i + 0.5f }, weights)) {
 
-                float depth = dot({ triangle[0].z, triangle[1].z, triangle[2].z }, weights);
+                float depth = dot({ triangle[0].v.z, triangle[1].v.z, triangle[2].v.z }, weights);
 
 
                 if (depth < depthbuffer[width * i + j]) {
                     uint32_t pixelcolour = colour;
-                    int u, v;
-                    calculateUV(u, v, triangle, weights, vt);
+
+                    float u, v;
+                    calculateUV(u, v, triangle, weights);
+
                     if (mat != nullptr) {//has a texture
                         pixelcolour = mat->returnColourAtUV(u, v);
                     }
@@ -95,13 +107,10 @@ void Renderer::rasterize(Entity& object)
     for (int i = 0; i < triangles.size(); i++) {
 
         //backface culling for counterclockwise
-        if (isClockwise(triangles[i].data()[0], triangles[i].data()[1], triangles[i].data()[2]))
+        if (isClockwise(triangles[i].data()[0].v, triangles[i].data()[1].v, triangles[i].data()[2].v))
         {
 
-            ///to jest zle bo te tez musisz clippowac w update renderable
-            Vec<float, 2> vt[] = { object.getVtByIndex(object.getVtFaceByIndex(i)[0]), object.getVtByIndex(object.getVtFaceByIndex(i)[1]) , object.getVtByIndex(object.getVtFaceByIndex(i)[2]) };
-
-            printTriangle(triangles[i].data(), colours[i % 2], mat, vt);
+            printTriangle(triangles[i].data(), colours[i % 2], mat);
         }
 
     }

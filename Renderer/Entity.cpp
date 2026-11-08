@@ -12,22 +12,22 @@ Entity::~Entity()
 {
 }
 
-void Entity::setMesh(const std::vector<Vec<int, 3>>& faces, const std::vector<Vec<int, 3>>& fvt, const std::vector<Vec<float, 3>>& vertices, const std::vector<Vec<float, 2>>& vt)
+void Entity::setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts)
 {
-	this->mesh.vertices = vertices;
-	this->mesh.faces = faces;
-	this->mesh.vt = vt;
-	this->mesh.fvt = fvt;
+	this->mesh.v = vertices;
+	this->mesh.f = faces;
+	this->mesh.vt = vts;
+	this->mesh.fvt = vtfaces;
 }
 
 int Entity::getVerticesCount()
 {
-	return this->mesh.vertices.size();
+	return this->mesh.v.size();
 }
 
 int Entity::getFacesCount()
 {
-	return this->mesh.faces.size();
+	return this->mesh.f.size();
 }
 
 Transform& Entity::getTransform()
@@ -35,19 +35,19 @@ Transform& Entity::getTransform()
 	return this->transform;
 }
 
-Vec<float, 3> Entity::getVertexByIndex(int i)
+Vec <float, 3> Entity::getVertexByIndex(int i)
 {
-	return mesh.vertices[i];
-}
-
-Vec<int, 3> Entity::getFaceByIndex(int i)
-{
-	return mesh.faces[i];
+	return mesh.v[i];
 }
 
 Vec<float, 2> Entity::getVtByIndex(int i)
 {
 	return mesh.vt[i];
+}
+
+Vec<int, 3> Entity::getFaceByIndex(int i)
+{
+	return mesh.f[i];
 }
 
 Vec<int, 3> Entity::getVtFaceByIndex(int i)

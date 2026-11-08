@@ -12,12 +12,12 @@ Material::~Material()
 {
 }
 
-uint32_t Material::returnColourAtUV(const int& u, const int& v)
+uint32_t Material::returnColourAtUV(const float& u, const float& v)
 {
     int x = static_cast<int>(u * width);
     int y = static_cast<int>(v * height);
 
-    if(x>width || y > height)
+    if(x < 0 || x >= width || y < 0 || y >= height)
     {
         return RED;
     }

@@ -7,7 +7,7 @@ class Material
 public:
 	Material(uint32_t* t, int w, int h);
 	~Material();
-	uint32_t returnColourAtUV(const int& u, const int& v);
+	uint32_t returnColourAtUV(const float& u, const float& v);
 	
 private:
 	int width, height;
