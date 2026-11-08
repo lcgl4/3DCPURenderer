@@ -7,10 +7,12 @@ Code documentation is at: `docs\documentation.md`.
 
 
 ## Controls
-Use WSAD to move the camera horizontaly, shift and space for vertical movement. Q and E for turning left and right.
+Use WSAD to move the camera horizontaly, shift and space for vertical movement. Q and E for turning left and right.\
+Press H to switch between scenes.\
+Press X to switch between rendering modes. (to be implemented)
 
 ## Viewing your models
-The renderer requires `.obj` and `.mtl` files. To view your models modify the `scene.txt` file following this convencion:
+The renderer requires `.obj` and `.mtl` files. To view your models modify the `scene.txt` or `scene2.txt` file following this convencion:
 
 ```txt
 model_name_without_extension x_coordinate y_coordinate z_coordinate

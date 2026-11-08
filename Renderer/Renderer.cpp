@@ -57,7 +57,7 @@ void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
     float zInter = weights.x * (1 / t[0].v.z) + weights.y * (1 / t[1].v.z) + weights.z * (1 / t[2].v.z);
     */
     u = uInter / wInter;
-    v = vInter / wInter;
+    v = 1.0f - ( vInter / wInter);
 }
 
 void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) {
