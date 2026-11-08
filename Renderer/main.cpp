@@ -18,6 +18,11 @@ int main() {
 
 	Scene scene;
 	scene.loadSceneFromFile("scene.txt");
+	Scene scene2;
+	scene2.loadSceneFromFile("scene2.txt");
+	Scene* currentScene = &scene;
+
+	float sceneSwitchLock = 1.f;
 
 
 	Window* window = new Window(W_WIDTH, W_HEIGHT);
@@ -40,6 +45,10 @@ int main() {
 
 		last = now;
 
+		if (sceneSwitchLock > 0) {
+			sceneSwitchLock -= delta;
+		}
+
 		float zMove = 2.5 * delta;
 
 		float angle = 0.2 * M_PI * delta;
@@ -53,36 +62,49 @@ int main() {
 			running = false;
 		}
 		if (window->isKeyPressed('W')) {
-			scene.getSceneCamera().move({ 0, 0, -zMove });
+			currentScene->getSceneCamera().move({ 0, 0, -zMove });
 		}
 		if (window->isKeyPressed('S')) {
-			scene.getSceneCamera().move({ 0, 0, zMove });
+			currentScene->getSceneCamera().move({ 0, 0, zMove });
 		}
 		if (window->isKeyPressed('A')) {
-			scene.getSceneCamera().move({ -zMove, 0, 0 });
+			currentScene->getSceneCamera().move({ -zMove, 0, 0 });
 		}
 		if (window->isKeyPressed('D')) {
-			scene.getSceneCamera().move({ zMove, 0, 0 });
+			currentScene->getSceneCamera().move({ zMove, 0, 0 });
 		}
 		if (window->isKeyPressed('Q')) {
-			scene.getSceneCamera().rotate({ 0, angle, 0 });
+			currentScene->getSceneCamera().rotate({ 0, angle, 0 });
 		}
 		if (window->isKeyPressed('E')) {
-			scene.getSceneCamera().rotate({ 0, -angle, 0 });
+			currentScene->getSceneCamera().rotate({ 0, -angle, 0 });
+		}
+		if (window->isKeyPressed('H')) {
+			if(sceneSwitchLock <=0)
+			{
+				if (currentScene == &scene) {
+					currentScene = &scene2;
+				}
+				else {
+					currentScene = &scene;
+				}
+				sceneSwitchLock = 1.f;
+			}
 		}
 		if (window->isKeyPressed(VK_SPACE)) {
-			scene.getSceneCamera().move({ 0, zMove, 0 });
+			currentScene->getSceneCamera().move({ 0, zMove, 0 });
 		}
 		if (window->isKeyPressed(VK_SHIFT)) {
-			scene.getSceneCamera().move({ 0, -zMove, 0 });
+			currentScene->getSceneCamera().move({ 0, -zMove, 0 });
 		}
 
 		window->clearScreen();
 
-		scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
+		//example how to manipulate an object
+		//scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
 
 
-		renderer.renderScene(scene);
+		renderer.renderScene(*currentScene);
 
 		window->render();
 	}
