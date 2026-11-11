@@ -101,7 +101,8 @@ int main() {
 		window->clearScreen();
 
 		//example how to manipulate an object
-		//scene.getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
+		//currentScene->getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
+		//currentScene->getSceneObjectByIndex(0).setScale({ 3, 3, 0.5f });
 
 
 		renderer.renderScene(*currentScene);

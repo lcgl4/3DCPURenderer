@@ -34,27 +34,30 @@ struct Transform
 class Entity
 {
 public:
-	Entity(Vec<float, 3> position, Material* material);
+	Entity(Material* material);
 	~Entity();
 	void setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts);
 	int getVerticesCount();
 	int getFacesCount();
-	Transform& getTransform();
+	int getInstancesCount();
+	void addInstance(Vec<float, 3> position);
+	Transform& getInstanceTransformByIndex(int i);
 	Vec <float, 3> getVertexByIndex(int i);
 	Vec <float, 2> getVtByIndex(int i);
 	Vec <int, 3> getFaceByIndex(int i);
 	Vec <int, 3> getVtFaceByIndex(int i);
 	Material* getMaterial();
-	void move(Vec<float, 3> offset);
-	void rotate(Vec<float, 3> d);
-	Mat4 getModelMatrix();
+	void moveInstance(Vec<float, 3> offset, int i);
+	void rotateInstance(Vec<float, 3> d, int i);
+	void setInstanceScale(Vec<float, 3> d, int i);
+	Mat4 getInstanceModelMatrix(int i);
 private:
-	Mat4 getRotationMatrix();
-	Mat4 getTranslationMatrix();
-	Mat4 getScaleMatrix();
+	Mat4 getInstanceRotationMatrix(int i);
+	Mat4 getInstanceTranslationMatrix(int i);
+	Mat4 getInstanceScaleMatrix(int i);
 
 	Material* material;
 	Mesh mesh;
-	Transform transform;
+	std::vector<Transform> instances;
 };
 

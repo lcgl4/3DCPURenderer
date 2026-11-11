@@ -20,23 +20,26 @@ void Scene::loadSceneFromFile(const std::string name)
 
     std::string line;
 
-    int i = 0;
     while (std::getline(file, line)) {
 
         if (line.empty()) continue;
 
         std::stringstream ss(line);
         std::string name;
-        Vec<float, 3> position;
+
 
         ss >> name;
-        ss >> position.x;
-        ss >> position.y;
-        ss >> position.z;
+        Entity* entity = new Entity(loadMaterialFromFile(name));
 
-        objects.push_back(new Entity(position, loadMaterialFromFile(name)));
-        loadEntityFromFile(name, *objects[i]);
-        i++;
+        Vec<float, 3> position;
+
+        while(ss >> position.x >> position.y >> position.z)
+        {
+            entity->addInstance(position);
+        }
+
+        loadEntityFromFile(name, *entity);
+        objects.push_back(entity);
     }
 
     file.close();
