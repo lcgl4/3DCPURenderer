@@ -174,7 +174,7 @@ bool isClockwise(const Vec<float, 4>& a, const Vec<float, 4>& b, const Vec<float
 
 coordinateBlock getRBlock(Vertex t[]);//rasterization block
 
-void updateRenderable(Entity& object, Camera& camera, std::vector<std::array<Vertex, 3>>& triangles, Mat4& projection, int width, int height);
+void updateRenderable(Entity& object, int i, Camera& camera, std::vector<std::array<Vertex, 3>>& triangles, Mat4& projection, int width, int height);
 
 void normalizeQuaternion(Quaternion& q);
 

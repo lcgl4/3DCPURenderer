@@ -207,14 +207,14 @@ std::vector<Vertex> clipNear(const std::vector<Vertex>& polygon) {
     return outputs;
 }
 
-void updateRenderable(Entity& object, Camera& camera, std::vector<std::array<Vertex, 3>>& triangles, Mat4& projection, int width, int height)
+void updateRenderable(Entity& object, int i, Camera& camera, std::vector<std::array<Vertex, 3>>& triangles, Mat4& projection, int width, int height)
 {
 
     std::vector <Vec<float, 4>> projected;
     projected.reserve(object.getVerticesCount());
     triangles.reserve(object.getFacesCount());
 
-    Mat4 model = object.getModelMatrix();
+    Mat4 model = object.getInstanceModelMatrix(i);
     Mat4 view = camera.getViewMatrix();
     Mat4 MVP = projection * view * model;
 

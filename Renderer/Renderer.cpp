@@ -33,8 +33,11 @@ void Renderer::renderScene(Scene& s)
 {
     clearDepthBuffer();
 	for (int i = 0; i < s.getNumberOfObjectsContained(); i++) {
-
-		updateRenderable(s.getSceneObjectByIndex(i), s.getSceneCamera(), triangles, projection, width, height);
+        Entity* e = &s.getSceneObjectByIndex(i);
+        for(int i=0;i<e->getInstancesCount();i++)
+        {
+            updateRenderable(*e, i, s.getSceneCamera(), triangles, projection, width, height);
+        }
 
 		rasterize(s.getSceneObjectByIndex(i));
 	}

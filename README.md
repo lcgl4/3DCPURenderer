@@ -19,6 +19,9 @@ model_name_without_extension x_coordinate y_coordinate z_coordinate
 next_model_name x_coordinate y_coordinate z_coordinate
 ```
 
+Models can also be scaled and rotated but that is not supported by the scene format and if the user wishes to do so they have to use functions given in the commented example in `main.cpp`.
+
+
 ## Compilation
 Compile with Visual Studio 2022 or newer.
 

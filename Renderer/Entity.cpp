@@ -1,10 +1,7 @@
 #include "Entity.h"
 
-Entity::Entity(Vec<float, 3> position, Material* material)
+Entity::Entity(Material* material)
 {
-	transform.position = position;
-	transform.scale = { 1,1,1 };
-	transform.rotation = { 1, 0, 0, 0 };
 	this->material = material;
 }
 
@@ -30,10 +27,25 @@ int Entity::getFacesCount()
 	return this->mesh.f.size();
 }
 
-Transform& Entity::getTransform()
+int Entity::getInstancesCount()
 {
-	return this->transform;
+	return instances.size();
 }
+
+void Entity::addInstance(Vec<float, 3> position)
+{
+	Transform transform;
+	transform.position = position;
+	transform.scale = { 1,1,1 };
+	transform.rotation = { 1, 0, 0, 0 };
+	instances.push_back(transform);
+}
+
+Transform& Entity::getInstanceTransformByIndex(int i)
+{
+	return this->instances[i];
+}
+
 
 Vec <float, 3> Entity::getVertexByIndex(int i)
 {
@@ -60,12 +72,12 @@ Material* Entity::getMaterial()
 	return this->material;
 }
 
-void Entity::move(Vec<float, 3> offset)
+void Entity::moveInstance(Vec<float, 3> offset, int i)
 {
-	transform.position = transform.position + offset;
+	instances[i].position = instances[i].position + offset;
 }
 
-void Entity::rotate(Vec<float, 3> d)
+void Entity::rotateInstance(Vec<float, 3> d, int i)
 {
 	Quaternion qx = axisAngle({ 1, 0, 0 }, d.x);
 	Quaternion qy = axisAngle({ 0, 1, 0 }, d.y);
@@ -73,17 +85,22 @@ void Entity::rotate(Vec<float, 3> d)
 
 	Quaternion delta = multiply(qz, multiply(qy, qx));
 
-	transform.rotation = multiply(delta, transform.rotation);
-	normalizeQuaternion(transform.rotation);
+	instances[i].rotation = multiply(delta, instances[i].rotation);
+	normalizeQuaternion(instances[i].rotation);
 }
 
-Mat4 Entity::getModelMatrix()
+void Entity::setInstanceScale(Vec<float, 3> d, int i)
 {
-	return getTranslationMatrix() * getRotationMatrix() * getScaleMatrix();
+	instances[i].scale = d;
 }
 
-Mat4 Entity::getRotationMatrix() {
-	Quaternion q = transform.rotation;
+Mat4 Entity::getInstanceModelMatrix(int i)
+{
+	return getInstanceTranslationMatrix(i) * getInstanceRotationMatrix(i) * getInstanceScaleMatrix(i);
+}
+
+Mat4 Entity::getInstanceRotationMatrix(int i) {
+	Quaternion q = instances[i].rotation;
 	return {
 		1 - 2 * q.y * q.y - 2 * q.z * q.z,         2 * q.x * q.y - 2 * q.s * q.z,                   2 * q.x * q.z + 2 * q.s * q.y,                   0,
 		2 * q.x * q.y + 2 * q.s * q.z,              1 - 2 * q.x * q.x - 2 * q.z * q.z,             2 * q.y * q.z - 2 * q.s * q.x,                    0,
@@ -92,21 +109,21 @@ Mat4 Entity::getRotationMatrix() {
 	};
 }
 
-Mat4 Entity::getTranslationMatrix()
+Mat4 Entity::getInstanceTranslationMatrix(int i)
 {
 	Mat4 t;
-	t.m[T_X] = transform.position.x;
-	t.m[T_Y] = transform.position.y;
-	t.m[T_Z] = transform.position.z;
+	t.m[T_X] = instances[i].position.x;
+	t.m[T_Y] = instances[i].position.y;
+	t.m[T_Z] = instances[i].position.z;
 	return t;
 }
 
-Mat4 Entity::getScaleMatrix()
+Mat4 Entity::getInstanceScaleMatrix(int i)
 {
 	Mat4 s = {
-		transform.scale.x, 0, 0, 0,
-		0, transform.scale.y, 0, 0,
-		0, 0, transform.scale.z, 0,
+		instances[i].scale.x, 0, 0, 0,
+		0, instances[i].scale.y, 0, 0,
+		0, 0, instances[i].scale.z, 0,
 		0, 0, 0, 1
 	};
 	return s;
