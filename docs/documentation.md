@@ -60,7 +60,7 @@ The `Window` width and height are set to be `1366` and `768`. It stores `uint32_
 is the one that clears the frame buffer and prints the data put there by the `Renderer` to the screen. The window is also responsible of printing the on screen information such as number of primitives rendered.
 
 ### Scene
-The `Scene` instance owns a `Camera camera` and `std::vector <Entity*> objects`. It is responsible for starting the process described in [Reading model data](#reading-model-data). Since the lifetimes of a `Camera` instance and all objects (`Entity` class) are owned by the
+The `Scene` instance owns a `Camera` and `std::vector <Entity*> objects`. It is responsible for starting the process described in [Reading model data](#reading-model-data). Since the lifetimes of a `Camera` instance and all objects (`Entity` class) are owned by the
 `Scene` it provides functions that return by refernce the `Camera` instance and `Entity` instances given their index (which is being used by the `Renderer` instance to iterate over all objects to render them).\
 The project is set up to handle 2 scenes that can be switched between by pressing the "h" key. Both scenes are loaded before the main loop but because of the OS's lazy loading, switching to the second scene for the first time will cause a process memory usage spike.
 
@@ -83,7 +83,8 @@ struct Transform
 An `Entity` instance can call a method to return the model matrix of a choosen instance of the model by index.
 
 ### Material
-A `Material` instance stores its width, height and `uint32_t* texture` that stores the texture data in the `0xAARRGGBB` format. It returns the texture colour at uv coordinates (the uv coordinates are normalized inside the function not before).
+A `Material` instance stores its width, height and `uint32_t* texture` that stores the texture data in the `0xAARRGGBB` format. It returns the texture colour at uv coordinates (the uv coordinates are normalized inside the function not before).\
+If the given uv coordinates point to a pixel out of range a predefined red colour will be returned.
 
 ## Math pipeline
 How the 3D models are processed every frame.
@@ -107,8 +108,8 @@ How the 3D models are processed every frame.
 	For every triangle that is being printed we get its bounding box known in code as `coordinateBlock` and check (using barycentric coordinates) for each pixel if it is inside the triangle (checking the middle of the pixel by adding `0.5f`).  If the point lies within the triangle
 	we get the depth from dot product of the vector with the triangle vertices z values and the barycentric weights vector. If that depth is lower than the value present at that coordinate in the z buffer it replaces it.
 1. ### Pseudo fragment shader
-	We pass the vt coordinates that were processed along the vertex coordinates to a function with the current triangle being printed and its weights and return the uv coordinates. The uv coordinates are passed by reference to the model's material that normalizes them and returns
-	the texture colour they point to.
+	We pass the vt coordinates that were processed along the vertex coordinates to a function with the current triangle being printed and its weights and return the uv coordinates. The uv coordinates are passed by reference to the model's [material](#material) that normalizes them and returns
+	the texture colour they point to. If the pointer to the [material](#material) is `nullptr` the primitives are rendered in default blue and green flat colours.
 
 ### quaternions
 Quaternions are managed using these functions:

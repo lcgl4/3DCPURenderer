@@ -9,12 +9,14 @@ Entity::~Entity()
 {
 }
 
-void Entity::setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts)
+void Entity::setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts, const std::vector < Vec <int, 3> >& vnfaces, const std::vector < Vec<float, 3> >& vns)
 {
 	this->mesh.v = vertices;
 	this->mesh.f = faces;
 	this->mesh.vt = vts;
 	this->mesh.fvt = vtfaces;
+	this->mesh.vn = vns;
+	this->mesh.fvn = vnfaces;
 }
 
 int Entity::getVerticesCount()
@@ -57,6 +59,11 @@ Vec<float, 2> Entity::getVtByIndex(int i)
 	return mesh.vt[i];
 }
 
+Vec<float, 3> Entity::getVnByIndex(int i)
+{
+	return mesh.vn[i];
+}
+
 Vec<int, 3> Entity::getFaceByIndex(int i)
 {
 	return mesh.f[i];
@@ -65,6 +72,11 @@ Vec<int, 3> Entity::getFaceByIndex(int i)
 Vec<int, 3> Entity::getVtFaceByIndex(int i)
 {
 	return mesh.fvt[i];
+}
+
+Vec<int, 3> Entity::getVnFaceByIndex(int i)
+{
+	return mesh.fvn[i];
 }
 
 Material* Entity::getMaterial()

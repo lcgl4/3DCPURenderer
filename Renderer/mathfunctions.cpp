@@ -158,8 +158,9 @@ Vertex getIntersection(const Vertex& s, const Vertex& p, ClipPlane plane) {
     if (plane == Near)   intersect.w = 0.1f;
 
     Vec<float, 2> intersectVt = { s.vt.x + t * (p.vt.x - s.vt.x), s.vt.y + t * (p.vt.y - s.vt.y) };
+    Vec<float, 3> intersectVn = { s.vn.x + t * (p.vn.x - s.vn.x), s.vn.y + t * (p.vn.y - s.vn.y), s.vn.z + t * (p.vn.z - s.vn.z) };
 
-    return { intersect, intersectVt };
+    return { intersect, intersectVt, intersectVn };
 }
 
 std::vector<Vertex> clipTriangle(const std::vector<Vertex>& triangle) {
@@ -245,9 +246,11 @@ void updateRenderable(Entity& object, int i, Camera& camera, std::vector<std::ar
 
         Vec<int, 3> vtFace = object.getVtFaceByIndex(i);
 
-        Vertex v0(projected[cFace.x], object.getVtByIndex(vtFace.x));
-        Vertex v1(projected[cFace.y], object.getVtByIndex(vtFace.y));
-        Vertex v2(projected[cFace.z], object.getVtByIndex(vtFace.z));
+        Vec<int, 3> vnFace = object.getVnFaceByIndex(i);
+
+        Vertex v0(projected[cFace.x], object.getVtByIndex(vtFace.x), object.getVnByIndex(vnFace.x));
+        Vertex v1(projected[cFace.y], object.getVtByIndex(vtFace.y), object.getVnByIndex(vnFace.y));
+        Vertex v2(projected[cFace.z], object.getVtByIndex(vtFace.z), object.getVnByIndex(vnFace.z));
 
         std::vector<Vertex> polygon = { v0, v1, v2 };
 
@@ -270,7 +273,7 @@ void updateRenderable(Entity& object, int i, Camera& camera, std::vector<std::ar
 
         std::vector<Vertex> pixelPoints;
         for (int k = 0; k < polygon.size(); k++) {
-            pixelPoints.push_back({ { NDCtoPixels(polygon[k].v, width, height), polygon[k].v.w },  polygon[k].vt });
+            pixelPoints.push_back({ { NDCtoPixels(polygon[k].v, width, height), polygon[k].v.w },  polygon[k].vt, polygon[k].vn});
         }
 
         if (pixelPoints.size() >= 3) {

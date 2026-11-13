@@ -52,10 +52,15 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
 
     std::vector < Vec <float, 3> > vertices;
     std::vector < Vec <float, 2> > vts;
+    std::vector < Vec <float, 3> > vns;
+
     std::vector < Vec <int, 3> > faces;
     std::vector < Vec <int, 3> > vtfaces;
+    std::vector < Vec <int, 3> > vnfaces;
+
     std::vector <int> singleFace;
     std::vector <int> singleFaceVt;
+    std::vector <int> singleFaceVn;
 
     Vec <float, 3> vertex;
     Vec <float, 2> vt;
@@ -73,14 +78,19 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                     iss >> vertex.x >> vertex.y >> vertex.z;
                     vertices.push_back(vertex);
                 }
-                if (prefix =="vt") {
+                else if (prefix =="vn") {
+
+                    iss >> vertex.x >> vertex.y >> vertex.z;
+                    vns.push_back(vertex);
+                }
+                else if (prefix =="vt") {
 
                     iss >> vt.x >> vt.y;
                     vts.push_back(vt);
                 }
 
                 //faces
-                if (prefix=="f") {
+                else if (prefix=="f") {
                     
                     std::string index;
                     while (iss >> index) {
@@ -107,6 +117,19 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                         }
                         faceVert--;
                         singleFaceVt.push_back(faceVert);
+
+                        if (i < index.size() && index[i] == '/') {
+                            i++;
+                        }
+
+                        faceVert = 0;
+                        while (i < index.size() && index[i] != ' ')
+                        {
+                            faceVert = faceVert * 10 + (index[i] - '0');
+                            i++;
+                        }
+                        faceVert--;
+                        singleFaceVn.push_back(faceVert);
                         
                     }
 
@@ -120,17 +143,23 @@ void loadEntityFromFile(const std::string modelname, Entity& obj)
                         int e = singleFaceVt[i];
                         int f= singleFaceVt[i + 1];
 
+                        int g = singleFaceVt[0];
+                        int h = singleFaceVt[i];
+                        int j= singleFaceVt[i + 1];
+
                         faces.push_back({a,b,c});
                         vtfaces.push_back({d,e,f});
+                        vnfaces.push_back({g,h,j});
                     }
                     singleFace.clear();
                     singleFaceVt.clear();
+                    singleFaceVn.clear();
                 }
             }
 
             normalizeModelCoordinates(vertices);
 
-            obj.setMesh(faces, vertices, vtfaces, vts);
+            obj.setMesh(faces, vertices, vtfaces, vts, vnfaces, vns);
 
             file.close();
         }

@@ -12,16 +12,19 @@ class Material;
 struct Vertex {
 	Vec<float, 4> v;
 	Vec<float, 2> vt;
-
-	Vertex(Vec<float, 4> iv, Vec<float, 2> ivt) : v(iv), vt(ivt) {}
+	Vec<float, 3> vn;
+	Vertex(Vec<float, 4> iv, Vec<float, 2> ivt, Vec<float, 3> ivn) : v(iv), vt(ivt), vn(ivn) {}
 };
 
 struct Mesh
 {
 	std::vector<Vec<float, 3>> v;
 	std::vector<Vec<float, 2>> vt;
+	std::vector<Vec<float, 3>> vn;
+
 	std::vector<Vec<int, 3>> f;
 	std::vector<Vec<int, 3>> fvt;
+	std::vector<Vec<int, 3>> fvn;
 };
 
 struct Transform
@@ -36,7 +39,7 @@ class Entity
 public:
 	Entity(Material* material);
 	~Entity();
-	void setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts);
+	void setMesh(const std::vector < Vec <int, 3> >& faces, const std::vector < Vec<float, 3> >& vertices, const std::vector < Vec <int, 3> >& vtfaces, const std::vector < Vec<float, 2> >& vts, const std::vector < Vec <int, 3> >& vnfaces, const std::vector < Vec<float, 3> >& vns);
 	int getVerticesCount();
 	int getFacesCount();
 	int getInstancesCount();
@@ -44,8 +47,10 @@ public:
 	Transform& getInstanceTransformByIndex(int i);
 	Vec <float, 3> getVertexByIndex(int i);
 	Vec <float, 2> getVtByIndex(int i);
+	Vec <float, 3> getVnByIndex(int i);
 	Vec <int, 3> getFaceByIndex(int i);
 	Vec <int, 3> getVtFaceByIndex(int i);
+	Vec <int, 3> getVnFaceByIndex(int i);
 	Material* getMaterial();
 	void moveInstance(Vec<float, 3> offset, int i);
 	void rotateInstance(Vec<float, 3> d, int i);
