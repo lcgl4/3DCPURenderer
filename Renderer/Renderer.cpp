@@ -43,7 +43,7 @@ void Renderer::renderScene(Scene& s)
             updateRenderable(*e, i, s.getSceneCamera(), triangles, projection, width, height);
         }
 
-		rasterize(s.getSceneObjectByIndex(i));
+		rasterize(s.getSceneObjectByIndex(i), s.getLightDir());
 	}
 }
 
@@ -57,7 +57,7 @@ void Renderer::clearDepthBuffer() {
         depthbuffer[i] = 300.f;//for now checking against hardcoded huge number
 }
 
-void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) {
+void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat, const Vec<float, 3>& LightDir) {
 
     coordinateBlock c = getRBlock(triangle);
 
@@ -81,12 +81,23 @@ void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) 
                     //pseudo fragment shading below
                     uint32_t pixelcolour = colour;
 
-                    float u, v;
-                    calculateUV(u, v, triangle, weights);
 
                     if (mat != nullptr) {//has a texture
+                        float u, v;
+
+                        calculateUV(u, v, triangle, weights);
+
                         pixelcolour = mat->returnColourAtUV(u, v);
                     }
+                    Vec<float, 3> normals;
+                    interpolateNormals(normals, triangle, weights);
+                    float diffuse = dot(normals, LightDir);
+                    if (diffuse < 0) {
+                        diffuse = 0.0f;
+                    }
+                    float intensity = AMBIENT_LIGHT + (1.0f - AMBIENT_LIGHT) * diffuse;
+                    applyLighting(pixelcolour, intensity);
+
                     buffer[width * i + j] = pixelcolour;
 
                 }
@@ -97,7 +108,7 @@ void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) 
     }
 }
 
-void Renderer::rasterize(Entity& object)
+void Renderer::rasterize(Entity& object, const Vec<float, 3>& LightDir)
 {
     uint32_t colours[] = { GREEN, BLUE };
     Material* mat = object.getMaterial();
@@ -108,7 +119,7 @@ void Renderer::rasterize(Entity& object)
         if (isClockwise(triangles[i].data()[0].v, triangles[i].data()[1].v, triangles[i].data()[2].v))
         {
             primitivesCount++;
-            printTriangle(triangles[i].data(), colours[i % 2], mat);
+            printTriangle(triangles[i].data(), colours[i % 2], mat, LightDir);
         }
 
     }

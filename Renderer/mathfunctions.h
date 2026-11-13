@@ -187,3 +187,7 @@ Quaternion multiply(const Quaternion& a, const Quaternion& b);
 Vec<float, 3> rotateVector(Quaternion q, Vec<float, 3> v);
 
 void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights);
+
+void interpolateNormals(Vec<float, 3>& normals, Vertex t[], const Vec<float, 3>& weights);
+
+void applyLighting(uint32_t& colour, const float& intensity);

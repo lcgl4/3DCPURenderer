@@ -74,6 +74,17 @@ void rotate(Vec<float, 4>& vertex, const Mat4& r) {
     vertex = multiply(r, vertex);
 }
 
+void normalizeNormal(Vec<float, 3>& n) {
+    float length = sqrt(dot(n, n));
+
+    if (length == 0) {
+        n = { 0,0,0 };
+    }
+    else {
+        n = {n.x / length, n.y / length, n.z / length};
+    }
+}
+
 void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
     float uInter = weights.x * (t[0].vt.x / t[0].v.w) + weights.y * (t[1].vt.x / t[1].v.w) + weights.z * (t[2].vt.x / t[2].v.w);
     float vInter = weights.x * (t[0].vt.y / t[0].v.w) + weights.y * (t[1].vt.y / t[1].v.w) + weights.z * (t[2].vt.y / t[2].v.w);
@@ -82,6 +93,35 @@ void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
 
     u = uInter / wInter;
     v = 1.0f - (vInter / wInter);
+}
+
+void interpolateNormals(Vec<float, 3>& normals, Vertex t[], const Vec<float, 3>& weights) {
+    float xInter = weights.x * (t[0].vn.x / t[0].v.w) + weights.y * (t[1].vn.x / t[1].v.w) + weights.z * (t[2].vn.x / t[2].v.w);
+    float yInter = weights.x * (t[0].vn.y / t[0].v.w) + weights.y * (t[1].vn.y / t[1].v.w) + weights.z * (t[2].vn.y / t[2].v.w);
+    float zInter = weights.x * (t[0].vn.z / t[0].v.w) + weights.y * (t[1].vn.z / t[1].v.w) + weights.z * (t[2].vn.z / t[2].v.w);
+
+    float wInter = weights.x * (1 / t[0].v.w) + weights.y * (1 / t[1].v.w) + weights.z * (1 / t[2].v.w);
+
+    normals = {xInter / wInter, yInter / wInter, zInter / wInter };
+    normalizeNormal(normals);
+}
+
+void applyLighting(uint32_t& colour, const float& intensity) {
+
+    uint32_t a = (colour >> 24) & 0xFF;
+    uint32_t r = (colour >> 16) & 0xFF;
+    uint32_t g = (colour >> 8) & 0xFF;
+    uint32_t b = colour & 0xFF;
+
+    r = static_cast<uint32_t>(r * intensity);
+    g = static_cast<uint32_t>(g * intensity);
+    b = static_cast<uint32_t>(b * intensity);
+
+    r = std::min(255u, r);
+    g = std::min(255u, g);
+    b = std::min(255u, b);
+
+    colour = (a << 24) | (r << 16) | (g << 8) | b;
 }
 
 Vec<float, 3> NDCtoPixels(Vec<float, 4>& vertex, int width, int height) {
