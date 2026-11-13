@@ -74,6 +74,16 @@ void rotate(Vec<float, 4>& vertex, const Mat4& r) {
     vertex = multiply(r, vertex);
 }
 
+void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
+    float uInter = weights.x * (t[0].vt.x / t[0].v.w) + weights.y * (t[1].vt.x / t[1].v.w) + weights.z * (t[2].vt.x / t[2].v.w);
+    float vInter = weights.x * (t[0].vt.y / t[0].v.w) + weights.y * (t[1].vt.y / t[1].v.w) + weights.z * (t[2].vt.y / t[2].v.w);
+
+    float wInter = weights.x * (1 / t[0].v.w) + weights.y * (1 / t[1].v.w) + weights.z * (1 / t[2].v.w);
+
+    u = uInter / wInter;
+    v = 1.0f - (vInter / wInter);
+}
+
 Vec<float, 3> NDCtoPixels(Vec<float, 4>& vertex, int width, int height) {
     return Vec<float, 3>((vertex.x + 1.f) / 2.f * width, (1 - (vertex.y + 1.f) / 2.f) * height, vertex.z);
 }

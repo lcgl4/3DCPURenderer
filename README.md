@@ -19,7 +19,12 @@ model_name_without_extension x_coordinate y_coordinate z_coordinate
 next_model_name x_coordinate y_coordinate z_coordinate
 ```
 
-Models can also be scaled and rotated but that is not supported by the scene format and if the user wishes to do so they have to use functions given in the commented example in `main.cpp`.
+Providing additional sets of `x_coordinate y_coordinate z_coordinate` in the same line will create instances of that model. `scene2.txt` has an example of instancing.\
+`scene2.txt` is much more complex and will cause a spike in process memory usage once switched to. Once loaded the scene data isn't freed until the end of the program.\
+Models can also be scaled and rotated but that is not supported by the scene format and if the user wishes to do so they have to use functions given in the commented example in `main.cpp`.\
+\
+Default models present in the scene are: an untextured cube, Suzzane, Stanford bunny.\
+The Stanford bunny model has visible holes at the bottom of it that are not a result of erronous culling.
 
 
 ## Compilation

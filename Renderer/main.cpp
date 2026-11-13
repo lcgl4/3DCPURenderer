@@ -101,13 +101,13 @@ int main() {
 		window->clearScreen();
 
 		//example how to manipulate an object
-		//currentScene->getSceneObjectByIndex(0).rotate({ angle * 3, angle, angle / 2 });
-		//currentScene->getSceneObjectByIndex(0).setScale({ 3, 3, 0.5f });
+		//currentScene->getSceneObjectByIndex(0).rotateInstance({ angle * 3, angle, angle / 2 }, 0);
+		//currentScene->getSceneObjectByIndex(0).setInstanceScale({ 3, 3, 0.5f }, 0);
 
 
 		renderer.renderScene(*currentScene);
 
-		window->render();
+		window->render(renderer.getPrimitivesCount());
 	}
 
 	delete window;

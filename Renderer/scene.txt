@@ -1,2 +1,3 @@
 blendermonkey 0 0 -10
 blendercube 5 0 -11
+stanfordbunny 0 0 -15
