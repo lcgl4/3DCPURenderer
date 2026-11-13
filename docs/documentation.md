@@ -20,7 +20,7 @@ next_model_name x_coordinate y_coordinate z_coordinate
 As mentioned in `README.md` providing additional coordinates in the same line will create instances of the model.\
 The `scene.txt` and `scene2.txt` files are processed line by line. Each time first a new [Entity](#entity) is created and assigned a new [material](#material) with the texture described in the `.mtl` file. If the `.mtl` file does not contain a `map_Kd` line, the [material](#material) creation returns `nullptr` for which default blue and green primitives will be rendered. 
 Transforms of instances are created from the sets of coordinates and added to the new [Entity](#entity), then the `.obj` file with the model's name is opened.\
-From `.obj` file the vertices, texture vts and faces are read and pushed to temporary vectors and bigger polygons are processed via fan triangulation method.
+From `.obj` file the vertices, texture vts, normals and faces are read and pushed to temporary vectors and bigger polygons are processed via fan triangulation method.
 Then the temporary vertices vector is normalized for model coordinates and after that is done the temporary vectors are passed by reference to the new  [Entity](#entity) that was passed by reference to this loading function.\
 
 ## Internal organisation
@@ -62,6 +62,7 @@ is the one that clears the frame buffer and prints the data put there by the `Re
 ### Scene
 The `Scene` instance owns a `Camera` and `std::vector <Entity*> objects`. It is responsible for starting the process described in [Reading model data](#reading-model-data). Since the lifetimes of a `Camera` instance and all objects (`Entity` class) are owned by the
 `Scene` it provides functions that return by refernce the `Camera` instance and `Entity` instances given their index (which is being used by the `Renderer` instance to iterate over all objects to render them).\
+The scene also owns the normalized directional light vector and has a function for rotating it.\
 The project is set up to handle 2 scenes that can be switched between by pressing the "h" key. Both scenes are loaded before the main loop but because of the OS's lazy loading, switching to the second scene for the first time will cause a process memory usage spike.
 
 ### Entity
@@ -69,8 +70,13 @@ An `Entity` instance stores its mesh, pointer to a `Material` and a `std::vector
 ```cpp
 struct Mesh
 {
-	std::vector<Vec<float, 3>> vertices;
-	std::vector<Vec<int, 3>> faces;
+	std::vector<Vec<float, 3>> v;
+	std::vector<Vec<float, 2>> vt;
+	std::vector<Vec<float, 3>> vn;
+
+	std::vector<Vec<int, 3>> f;
+	std::vector<Vec<int, 3>> fvt;
+	std::vector<Vec<int, 3>> fvn;
 };
 
 struct Transform
@@ -87,7 +93,17 @@ A `Material` instance stores its width, height and `uint32_t* texture` that stor
 If the given uv coordinates point to a pixel out of range a predefined red colour will be returned.
 
 ## Math pipeline
-How the 3D models are processed every frame.
+How the 3D models are processed every frame.\
+\
+The `Vertex` struct used in it:
+```cpp
+struct Vertex {
+	Vec<float, 4> v;
+	Vec<float, 2> vt;
+	Vec<float, 3> vn;
+	Vertex(Vec<float, 4> iv, Vec<float, 2> ivt, Vec<float, 3> ivn) : v(iv), vt(ivt), vn(ivn) {}
+};
+```
 
 1. ### MVP matrix creation
 	[Entity](#entity) (along with the instance index), [Camera](#camera) and the projection matrix from [Renderer](#renderer) are passed by reference to the function. From [Entity](#entity) instance and [Camera](#camera) we get the model and view matrix which multiplied together with the projection matrix give us the MVP matrix.
@@ -95,7 +111,7 @@ How the 3D models are processed every frame.
 	Iterating through the vertices of the passed model we create a 4-component vector called `Vec<float, 4> vertex` that represents the current local vertex with fourth component being `1` to create homogenous coordinates. That vertex is multiplied by the MVP matrix which gives us
 	clip coordinates that are then pushed to the `std::vector <Vec<float, 4>> projected` vector.
 1. ### clipping
-	In the clipping stage we iterate through the faces of the model. A `std::vector<Vertex> polygon` is made using indexes from the current face that poit to vertices from `projected` vector from the last step and pair them with vt coordinates. The `polygon` is passed by reference for near plane clipping where
+	In the clipping stage we iterate through the faces of the model. A `std::vector<Vertex> polygon` is made using indexes from the current face that poit to vertices from `projected` vector from the last step and pair them with vt and vn values. The `polygon` is passed by reference for near plane clipping where
 	we check if the current vertex and the next one is inside (`w` of that vertex `>= 0.1f`). If both are inside we push back the second one to the outputs, if the second one is inside we push back the intersection and the second one, if the first one is inside we push back the intersection.
 	This proces repeats for all vertices and for the last one the second vertex is the first one of the polygon.\
 	If the `polygon` is empty after near clipping we skip that face.\
@@ -109,7 +125,13 @@ How the 3D models are processed every frame.
 	we get the depth from dot product of the vector with the triangle vertices z values and the barycentric weights vector. If that depth is lower than the value present at that coordinate in the z buffer it replaces it.
 1. ### Pseudo fragment shader
 	We pass the vt coordinates that were processed along the vertex coordinates to a function with the current triangle being printed and its weights and return the uv coordinates. The uv coordinates are passed by reference to the model's [material](#material) that normalizes them and returns
-	the texture colour they point to. If the pointer to the [material](#material) is `nullptr` the primitives are rendered in default blue and green flat colours.
+	the texture colour they point to. If the pointer to the [material](#material) is `nullptr` the colour returned is a either green or blue depending on the primitives order in the model. Then the vn values are also interpolated using the weights and normalized.
+	The diffuse value (Lambertian Reflectance) is calculated as a dot product of the calculated normals and directional light and clamped to 0 if lower.\
+	Intensity is calculated like this:
+	```cpp
+	float intensity = AMBIENT_LIGHT + (1.0f - AMBIENT_LIGHT) * diffuse;
+	```
+	and it is applied to the RGB channels of the obtained colour (either from the material or the default one). The AMBIENT_LIGHT is defined as `0.25f`. 
 
 ### quaternions
 Quaternions are managed using these functions:

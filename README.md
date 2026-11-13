@@ -1,6 +1,8 @@
 # 3D CPU based renderer
 A project recreating the 3d rendering pipeline on the CPU and showing performance differences when using SIMD (to be implemented) and without.\
 \
+![Demo](visuals/example.gif)\
+\
 The project uses [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)\
 \
 Code documentation is at: `docs\documentation.md`.
@@ -8,6 +10,8 @@ Code documentation is at: `docs\documentation.md`.
 
 ## Controls
 Use WSAD to move the camera horizontaly, shift and space for vertical movement. Q and E for turning left and right.\
+UP and DOWN arrow keys for rotating the directional light around the x axis\
+RIGHT and LEFT arrow keys for rotating the directional light around the z axis\
 Press H to switch between scenes.\
 Press X to switch between rendering modes. (to be implemented)
 

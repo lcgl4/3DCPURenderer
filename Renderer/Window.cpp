@@ -150,7 +150,7 @@ void Window::render(int primitiveCount)
 	swprintf_s(textBuffer, L"Rendered primitives on screen: %d", primitiveCount);
 	TextOutW(hdc, 10, 10, textBuffer, lstrlenW(textBuffer));
 
-	swprintf_s(textBuffer, L"SIMD: OFF (to be impemented)");
+	swprintf_s(textBuffer, L"multithreading and SIMD: OFF");
 	TextOutW(hdc, 10, 24, textBuffer, lstrlenW(textBuffer));
 
 	ReleaseDC(mHwnd, hdc);
