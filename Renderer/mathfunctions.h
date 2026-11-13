@@ -191,3 +191,5 @@ void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights);
 void interpolateNormals(Vec<float, 3>& normals, Vertex t[], const Vec<float, 3>& weights);
 
 void applyLighting(uint32_t& colour, const float& intensity);
+
+void normalizeNormal(Vec<float, 3>& n);

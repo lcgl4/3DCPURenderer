@@ -11,6 +11,8 @@
 #define W_WIDTH 1366
 #define W_HEIGHT 768
 
+#define LIGHT_ROTATION 0.8f
+
 Window* g_WindowInstance = nullptr;
 
 
@@ -90,6 +92,18 @@ int main() {
 				}
 				sceneSwitchLock = 1.f;
 			}
+		}
+		if (window->isKeyPressed(VK_RIGHT)) {
+			currentScene->rotateLightDir(0, -LIGHT_ROTATION * delta);
+		}
+		else if (window->isKeyPressed(VK_LEFT)) {
+			currentScene->rotateLightDir(0, LIGHT_ROTATION * delta);
+		}
+		if (window->isKeyPressed(VK_UP)) {
+			currentScene->rotateLightDir(-LIGHT_ROTATION * delta, 0);
+		}
+		else if (window->isKeyPressed(VK_DOWN)) {
+			currentScene->rotateLightDir(LIGHT_ROTATION * delta, 0);
 		}
 		if (window->isKeyPressed(VK_SPACE)) {
 			currentScene->getSceneCamera().move({ 0, zMove, 0 });
