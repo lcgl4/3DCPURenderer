@@ -55,6 +55,11 @@ Camera& Scene::getSceneCamera()
     return camera;
 }
 
+const Vec<float, 3>& Scene::getLightDir()
+{
+    return lightDir;
+}
+
 int Scene::getNumberOfObjectsContained()
 {
     return objects.size();
