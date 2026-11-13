@@ -65,7 +65,7 @@ Window::Window(int w, int h) : mHinstance(GetModuleHandle(nullptr))
 
 	AdjustWindowRect(&rect, style, false);
 
-	mHwnd = CreateWindowEx(0, CLASS_NAME, L"Renderer", style, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, mHinstance, NULL);
+	mHwnd = CreateWindowEx(0, CLASS_NAME, L"Renderer >:3", style, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, mHinstance, NULL);
 
 	ShowWindow(mHwnd, SW_SHOW);
 }
@@ -128,7 +128,7 @@ void Window::setKeyState(int virtualKeyCode, bool isDown)
 	keys[virtualKeyCode] = isDown;
 }
 
-void Window::render()
+void Window::render(int primitiveCount)
 {
 
 	HDC hdc = GetDC(mHwnd);
@@ -142,6 +142,16 @@ void Window::render()
 		DIB_RGB_COLORS,
 		SRCCOPY
 	);
+
+	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(0, 255, 0));
+
+	wchar_t textBuffer[256];
+	swprintf_s(textBuffer, L"Rendered primitives on screen: %d", primitiveCount);
+	TextOutW(hdc, 10, 10, textBuffer, lstrlenW(textBuffer));
+
+	swprintf_s(textBuffer, L"SIMD: OFF (to be impemented)");
+	TextOutW(hdc, 10, 24, textBuffer, lstrlenW(textBuffer));
 
 	ReleaseDC(mHwnd, hdc);
 }

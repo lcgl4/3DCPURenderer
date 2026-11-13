@@ -16,6 +16,7 @@ public:
 	Renderer(int width, int height, uint32_t* buffer);
 	~Renderer();
 	void renderScene(Scene& s);
+	int getPrimitivesCount();
 private:
 	void rasterize(Entity& object);
 	void clearDepthBuffer();
@@ -23,7 +24,7 @@ private:
 
 
 	std::vector<std::array<Vertex, 3>> triangles;
-
+	int primitivesCount;
 
 	Mat4 projection;
 

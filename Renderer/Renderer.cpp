@@ -6,6 +6,7 @@ Renderer::Renderer(int width, int height, uint32_t* buffer)
 	this->width = width;
 	this->height = height;
 	this->buffer = buffer;
+    this->primitivesCount = 0;
 
 
 	float tangent = std::tan(FOV / 2);
@@ -32,6 +33,9 @@ Renderer::~Renderer()
 void Renderer::renderScene(Scene& s)
 {
     clearDepthBuffer();
+
+    primitivesCount = 0;
+
 	for (int i = 0; i < s.getNumberOfObjectsContained(); i++) {
         Entity* e = &s.getSceneObjectByIndex(i);
         for(int i=0;i<e->getInstancesCount();i++)
@@ -43,24 +47,14 @@ void Renderer::renderScene(Scene& s)
 	}
 }
 
+int Renderer::getPrimitivesCount()
+{
+    return primitivesCount;
+}
+
 void Renderer::clearDepthBuffer() {
     for (int i = 0; i < width * height; i++)
         depthbuffer[i] = 300.f;//for now checking against hardcoded huge number
-}
-
-void calculateUV(float& u, float& v, Vertex t[], const Vec<float, 3>& weights) {
-    float uInter = weights.x * (t[0].vt.x / t[0].v.w) + weights.y * (t[1].vt.x / t[1].v.w) + weights.z * (t[2].vt.x / t[2].v.w);
-    float vInter = weights.x * (t[0].vt.y / t[0].v.w) + weights.y * (t[1].vt.y / t[1].v.w) + weights.z * (t[2].vt.y / t[2].v.w);
-
-    float wInter = weights.x * (1 / t[0].v.w) + weights.y * (1 / t[1].v.w) + weights.z * (1 / t[2].v.w);
-    /*
-    float uInter = weights.x * (t[0].vt.x / t[0].v.z) + weights.y * (t[1].vt.x / t[1].v.z) + weights.z * (t[2].vt.x / t[2].v.z);
-    float vInter = weights.x * (t[0].vt.y / t[0].v.z) + weights.y * (t[1].vt.y / t[1].v.z) + weights.z * (t[2].vt.y / t[2].v.z);
-
-    float zInter = weights.x * (1 / t[0].v.z) + weights.y * (1 / t[1].v.z) + weights.z * (1 / t[2].v.z);
-    */
-    u = uInter / wInter;
-    v = 1.0f - ( vInter / wInter);
 }
 
 void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) {
@@ -83,6 +77,8 @@ void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) 
 
 
                 if (depth < depthbuffer[width * i + j]) {
+                    depthbuffer[width * i + j] = depth;
+                    //pseudo fragment shading below
                     uint32_t pixelcolour = colour;
 
                     float u, v;
@@ -93,7 +89,6 @@ void Renderer::printTriangle(Vertex triangle[], uint32_t colour, Material* mat) 
                     }
                     buffer[width * i + j] = pixelcolour;
 
-                    depthbuffer[width * i + j] = depth;
                 }
 
             }
@@ -112,7 +107,7 @@ void Renderer::rasterize(Entity& object)
         //backface culling for counterclockwise
         if (isClockwise(triangles[i].data()[0].v, triangles[i].data()[1].v, triangles[i].data()[2].v))
         {
-
+            primitivesCount++;
             printTriangle(triangles[i].data(), colours[i % 2], mat);
         }
 

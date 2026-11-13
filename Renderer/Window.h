@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <cstdint>
+#include <stdio.h>
 
 #define BLACK 0x000000
 #define GREEN 0x00ff26
@@ -23,7 +24,7 @@ public:
 
 	bool processMessages();
 	uint32_t* getBuffer();
-	void render();
+	void render(int primitiveCount);
 	void clearScreen();
 	int getWidth();
 	int getHeight();
