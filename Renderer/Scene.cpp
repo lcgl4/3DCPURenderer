@@ -2,6 +2,7 @@
 
 Scene::Scene()
 {
+    lightDir = { 0.666f, 0.666f, 0.666f };
 }
 
 Scene::~Scene()
@@ -53,6 +54,20 @@ Entity& Scene::getSceneObjectByIndex(const int i)
 Camera& Scene::getSceneCamera()
 {
     return camera;
+}
+
+void Scene::rotateLightDir(const float x, const float z)
+{
+    Vec<float, 3> xAxis = { 1.0f, 0.0f, 0.0f };
+    Vec<float, 3> zAxis = { 0.0f, 0.0f, 1.0f };
+
+    Quaternion rotQuat = axisAngle(xAxis, x);
+    lightDir = rotateVector(rotQuat, lightDir);
+
+    rotQuat = axisAngle(zAxis, z);
+    lightDir = rotateVector(rotQuat, lightDir);
+
+    normalizeNormal(lightDir);
 }
 
 const Vec<float, 3>& Scene::getLightDir()
